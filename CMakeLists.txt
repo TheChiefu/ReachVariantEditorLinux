@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(RVT_DIR "${CMAKE_SOURCE_DIR}/native/src/ReachVariantTool")
+set(RVT_DIR "${CMAKE_SOURCE_DIR}/src")
 
 if(NOT EXISTS "${RVT_DIR}/main.cpp")
    message(FATAL_ERROR "ReachVariantTool sources not found at ${RVT_DIR}")
