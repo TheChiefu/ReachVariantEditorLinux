@@ -5,7 +5,7 @@
 #include "../helpers/stream.h"
 #include "../helpers/bitwriter.h"
 
-#include "../game_variants/components/megalo/limits.h"
+#include "../game_variants/components/megalo/script_limits.h"
 
 #if _DEBUG
    struct ReachDwordBasedBitsetDebugInfo {

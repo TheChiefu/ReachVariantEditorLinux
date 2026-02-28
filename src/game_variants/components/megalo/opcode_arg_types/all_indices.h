@@ -1,6 +1,6 @@
 #pragma once
 #include "../opcode_arg.h"
-#include "../limits.h"
+#include "../script_limits.h"
 
 namespace Megalo {
    class OpcodeArgValueBaseIndex : public OpcodeArgValue {

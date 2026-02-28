@@ -1,5 +1,5 @@
 #pragma once
-#include "limits.h"
+#include "script_limits.h"
 #include "../../../helpers/bitnumber.h"
 
 namespace Megalo {

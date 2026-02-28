@@ -6,7 +6,7 @@
 #include "../../../formats/indexed_lists.h"
 #include "../../../helpers/refcounting.h"
 #include "../../../helpers/stream.h"
-#include "limits.h"
+#include "script_limits.h"
 #include "limits_bitnumbers.h"
 
 class GameVariantDataMultiplayer;

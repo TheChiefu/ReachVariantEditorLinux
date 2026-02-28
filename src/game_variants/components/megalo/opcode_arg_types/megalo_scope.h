@@ -1,7 +1,7 @@
 #pragma once
 #include "../opcode_arg.h"
 #include "../code_block.h"
-#include "../limits.h"
+#include "../script_limits.h"
 #include "../limits_bitnumbers.h"
 
 namespace Megalo {

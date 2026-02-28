@@ -15,7 +15,7 @@
 #include "../components/megalo_game_stats.h"
 #include "../components/megalo_options.h"
 #include "../components/megalo/forge_label.h"
-#include "../components/megalo/limits.h"
+#include "../components/megalo/script_limits.h"
 #include "../components/megalo/trigger.h"
 #include "../components/megalo/variable_declarations.h"
 #include "../components/megalo/widgets.h"
