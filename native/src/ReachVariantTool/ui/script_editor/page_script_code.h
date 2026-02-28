@@ -8,6 +8,7 @@
 
 class QCompleter;
 class QEvent;
+class QShowEvent;
 class QStringListModel;
 class ScriptEditorFindReplaceBar;
 
@@ -36,6 +37,8 @@ class ScriptEditorPageScriptCode : public QWidget {
       //
       void updateLog(Compiler&);
       void redrawLog();
+      bool isCompileLogCollapsed() const;
+      void setCompileLogCollapseButtonState(bool);
       void setCompileLogCollapsed(bool);
       void updateCompileLogCollapseButton();
 
@@ -61,6 +64,7 @@ class ScriptEditorPageScriptCode : public QWidget {
       void applyCompletion(const QString&);
       static QStringList buildMegaloCompletionWords();
 
+      void showEvent(QShowEvent* event) override;
       bool eventFilter(QObject* watched, QEvent* event) override;
 
       QStringList _baseCompletionWords;

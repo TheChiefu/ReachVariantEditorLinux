@@ -11,6 +11,7 @@
 #include <QPlainTextEdit>
 #include <QRegularExpression>
 #include <QScrollBar>
+#include <QShowEvent>
 #include <QShortcut>
 #include <QSet>
 #include <QSplitter>
@@ -504,14 +505,11 @@ ScriptEditorPageScriptCode::ScriptEditorPageScriptCode(QWidget* parent) : QWidge
       this->ui.compileLog->copyAllToClipboard();
    });
    QObject::connect(this->ui.buttonCompileLogCollapse, &QPushButton::clicked, [this]() {
-      auto sizes = this->ui.splitter->sizes();
-      if (sizes.size() < 2)
-         return;
-      this->setCompileLogCollapsed(sizes[1] > 0);
+      this->setCompileLogCollapsed(!this->isCompileLogCollapsed());
    });
    QObject::connect(this->ui.splitter, &QSplitter::splitterMoved, [this](int, int) {
       auto sizes = this->ui.splitter->sizes();
-      if (sizes.size() >= 2 && sizes[1] > 0)
+      if (!this->isCompileLogCollapsed() && sizes.size() >= 2 && sizes[1] > 0)
          this->_compileLogExpandedSize = sizes[1];
       this->updateCompileLogCollapseButton();
    });
@@ -546,13 +544,25 @@ ScriptEditorPageScriptCode::ScriptEditorPageScriptCode(QWidget* parent) : QWidge
       this->jumpToLogItem(*item);
    });
 }
+bool ScriptEditorPageScriptCode::isCompileLogCollapsed() const {
+   auto sizes = this->ui.splitter->sizes();
+   return sizes.size() >= 2 && sizes[1] <= 0;
+}
+void ScriptEditorPageScriptCode::setCompileLogCollapseButtonState(bool collapsed) {
+   this->ui.buttonCompileLogCollapse->setText(collapsed ? QStringLiteral("⇧") : QStringLiteral("⇩"));
+   this->ui.buttonCompileLogCollapse->setToolTip(collapsed ? tr("Show compiler log") : tr("Hide compiler log"));
+}
 void ScriptEditorPageScriptCode::setCompileLogCollapsed(bool collapsed) {
    auto sizes = this->ui.splitter->sizes();
-   if (sizes.size() < 2)
+   if (sizes.size() < 2) {
+      this->setCompileLogCollapseButtonState(collapsed);
       return;
+   }
    int total = sizes[0] + sizes[1];
-   if (total <= 0)
+   if (total <= 0) {
+      this->setCompileLogCollapseButtonState(collapsed);
       return;
+   }
    if (collapsed) {
       if (sizes[1] > 0)
          this->_compileLogExpandedSize = sizes[1];
@@ -572,13 +582,13 @@ void ScriptEditorPageScriptCode::setCompileLogCollapsed(bool collapsed) {
       sizes[0] = total - log_size;
    }
    this->ui.splitter->setSizes(sizes);
-   this->updateCompileLogCollapseButton();
+   this->setCompileLogCollapseButtonState(collapsed);
+   QTimer::singleShot(0, this, [this]() {
+      this->updateCompileLogCollapseButton();
+   });
 }
 void ScriptEditorPageScriptCode::updateCompileLogCollapseButton() {
-   auto sizes = this->ui.splitter->sizes();
-   bool collapsed = sizes.size() >= 2 && sizes[1] == 0;
-   this->ui.buttonCompileLogCollapse->setText(collapsed ? QStringLiteral("▸") : QStringLiteral("▾"));
-   this->ui.buttonCompileLogCollapse->setToolTip(collapsed ? tr("Show compiler log") : tr("Hide compiler log"));
+   this->setCompileLogCollapseButtonState(this->isCompileLogCollapsed());
 }
 void ScriptEditorPageScriptCode::updateLog(Compiler& compiler) {
    this->_lastNotices  = compiler.get_notices();
@@ -1253,6 +1263,15 @@ void ScriptEditorPageScriptCode::applyCompletion(const QString& completion) {
    cursor.insertText(completion);
    this->_isApplyingCompletion = false;
    this->ui.textEditor->setTextCursor(cursor);
+}
+void ScriptEditorPageScriptCode::showEvent(QShowEvent* event) {
+   QWidget::showEvent(event);
+   QTimer::singleShot(0, this, [this]() {
+      auto sizes = this->ui.splitter->sizes();
+      if (sizes.size() >= 2 && sizes[1] > 0)
+         this->_compileLogExpandedSize = sizes[1];
+      this->updateCompileLogCollapseButton();
+   });
 }
 bool ScriptEditorPageScriptCode::eventFilter(QObject* watched, QEvent* event) {
    if ((watched == this->ui.textEditor || watched == this->ui.textEditor->viewport()) && event->type() == QEvent::Resize)
