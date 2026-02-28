@@ -15,7 +15,6 @@
 #include <QStandardPaths>
 
 #include <cstdio>
-#include <print>
 #include "./cli.h"
 #include "./editor_state.h"
 #include "./headless.h"
@@ -76,11 +75,11 @@ int main(int argc, char *argv[]) {
       }
       if (params.headless) {
          if (params.operation == rvt::headless_operation::none) {
-            std::println(stderr, "You didn't specify an operation to perform.");
+            std::fputs("You didn't specify an operation to perform.\n", stderr);
             return 1;
          }
          if (params.game_variant.input.empty()) {
-            std::println(stderr, "You didn't specify a game variant to operate on.");
+            std::fputs("You didn't specify a game variant to operate on.\n", stderr);
             return 1;
          }
 

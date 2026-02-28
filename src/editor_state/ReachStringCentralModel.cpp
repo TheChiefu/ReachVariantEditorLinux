@@ -164,8 +164,7 @@ void ReachStringDependentModel::setRequireAllLanguagesSame(bool v) {
    if (prop == v)
       return;
    prop = v;
-   this->beginFilterChange();
-   this->endFilterChange(QSortFilterProxyModel::Direction::Rows);
+   this->invalidate();
 }
 
 void ReachStringDependentModel::addBlacklistedString(const QString& v) {
@@ -174,16 +173,14 @@ void ReachStringDependentModel::addBlacklistedString(const QString& v) {
       if (item == v)
          return;
    prop.push_back(v);
-   this->beginFilterChange();
-   this->endFilterChange(QSortFilterProxyModel::Direction::Rows);
+   this->invalidate();
 }
 void ReachStringDependentModel::clearBlacklistedStrings() {
    auto& prop = this->_config.blacklist;
    if (prop.empty())
       return;
    prop.clear();
-   this->beginFilterChange();
-   this->endFilterChange(QSortFilterProxyModel::Direction::Rows);
+   this->invalidate();
 }
 
 bool ReachStringDependentModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const {

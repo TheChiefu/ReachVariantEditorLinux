@@ -1,6 +1,5 @@
 #include "./cli.h"
 #include <cstdio>
-#include <print>
 #include <string_view>
 #include "./rvt_version_macros.h"
 
@@ -27,7 +26,7 @@ namespace rvt {
 
          if (argc < 3) {
             this->has_error = true;
-            std::println(stderr, "To run RVT headlessly, you must specify a game variant file to modify.");
+            std::fputs("To run RVT headlessly, you must specify a game variant file to modify.\n", stderr);
             return;
          }
          this->game_variant.input = argv[2];
@@ -39,7 +38,7 @@ namespace rvt {
                this->operation = headless_operation::recompile;
                if (!has_next) {
                   this->has_error = true;
-                  std::println(stderr, "Expected a file path (to a file with Megalo code) after `--recompile`.");
+                  std::fputs("Expected a file path (to a file with Megalo code) after `--recompile`.\n", stderr);
                   return;
                }
                this->megalo_source = argv[i + 1];
@@ -49,7 +48,7 @@ namespace rvt {
             if (arg == "--dst") {
                if (!has_next) {
                   this->has_error = true;
-                  std::println(stderr, "Expected a file path (to save the modified game variant to) after `--dst`.");
+                  std::fputs("Expected a file path (to save the modified game variant to) after `--dst`.\n", stderr);
                   return;
                }
                this->game_variant.output = argv[i + 1];
@@ -57,24 +56,29 @@ namespace rvt {
                continue;
             }
             this->has_error = true;
-            std::println(stderr, "Unrecognized command line parameter; stopping. Parameter was: `{}`", arg);
+            std::fprintf(
+               stderr,
+               "Unrecognized command line parameter; stopping. Parameter was: `%.*s`\n",
+               (int)arg.size(),
+               arg.data()
+            );
             return;
          }
       }
    }
 
    extern void print_cli_help() {
-      std::println("ReachVariantTool {}.{}.{}.{}", VER_MAJOR, VER_MINOR, VER_PATCH, VER_BUILD);
-      std::println("Available commands:");
-      std::println("--headless <in-variant> --recompile <in-source>");
-      std::println(
+      std::printf("ReachVariantTool %d.%d.%d.%d\n", VER_MAJOR, VER_MINOR, VER_PATCH, VER_BUILD);
+      std::puts("Available commands:");
+      std::puts("--headless <in-variant> --recompile <in-source>");
+      std::puts(
          "   Loads the game variant at the <in-variant> file path. Loads the Megalo \n"
          "   script source code at the <in-source> file path. Attempts to recompile \n"
          "   the game variant's script; if successful, overwrites the game variant.\n"
          "\n"
       );
-      std::println("--headless <in-variant> --recompile <in-source> --dst <out-variant>");
-      std::println(
+      std::puts("--headless <in-variant> --recompile <in-source> --dst <out-variant>");
+      std::puts(
          "   Same as above, but the recompiled game variant is saved to <out-variant> \n"
          "   (if and only if recompilation succeeds).\n"
          "\n"
