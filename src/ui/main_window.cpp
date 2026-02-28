@@ -623,6 +623,8 @@ void ReachVariantTool::regenerateNavigation() {
 }
 
 void ReachVariantTool::onSelectedPageChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous) {
+   if (!current)
+      return;
    auto widget     = this->ui.MainTreeview;
    auto selections = widget->selectedItems();
    if (!selections.size())
