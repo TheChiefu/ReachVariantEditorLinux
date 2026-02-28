@@ -1,6 +1,12 @@
 #include "script_editor.h"
+#include <QDir>
+#include <QFile>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QMessageBox>
 #include <QMenuBar>
 #include <QResource>
+#include <QSaveFile>
 #include "../game_variants/data/object_types.h"
 #include "localized_string_editor.h"
 
@@ -61,6 +67,12 @@ MegaloScriptEditorWindow::MegaloScriptEditorWindow(QWidget* parent) : QDialog(pa
    {
       auto* root = new QMenu(tr("File"), menubar);
       {
+         auto* action = this->menu_actions.openScript = new QAction(tr("Open Script..."), root);
+         QObject::connect(action, &QAction::triggered, this, &MegaloScriptEditorWindow::openScriptFromFile);
+      }
+      root->addAction(this->menu_actions.openScript);
+      root->addSeparator();
+      {
          auto* action = this->menu_actions.save = new QAction(tr("Save"), root);
          QObject::connect(action, &QAction::triggered, this, [this]() { ReachEditorState::get().saveVariant(this, false); });
       }
@@ -68,11 +80,18 @@ MegaloScriptEditorWindow::MegaloScriptEditorWindow(QWidget* parent) : QDialog(pa
          auto* action = this->menu_actions.saveAs = new QAction(tr("Save As..."), root);
          QObject::connect(action, &QAction::triggered, this, [this]() { ReachEditorState::get().saveVariant(this, true); });
       }
+      root->addSeparator();
+      {
+         auto* action = this->menu_actions.saveScriptAs = new QAction(tr("Save Script As..."), root);
+         QObject::connect(action, &QAction::triggered, this, &MegaloScriptEditorWindow::saveScriptAsMegalo);
+      }
       root->addAction(this->menu_actions.save);
       root->addAction(this->menu_actions.saveAs);
+      root->addAction(this->menu_actions.saveScriptAs);
       menubar->addAction(root->menuAction());
    }
    {
+      this->menu_actions.openScript->setShortcut(QKeySequence::Open);
       this->menu_actions.save->setShortcut(QKeySequence::Save);
       this->menu_actions.saveAs->setShortcut(QKeySequence::SaveAs);
    }
@@ -92,11 +111,110 @@ void MegaloScriptEditorWindow::keyPressEvent(QKeyEvent* event) {
    QDialog::keyPressEvent(event);
 }
 
+void MegaloScriptEditorWindow::openScriptFromFile() {
+   auto* code_page = this->ui.pageContentScriptCode;
+   if (!code_page)
+      return;
+
+   if (code_page->hasUnsavedEditorTextChanges()) {
+      auto choice = QMessageBox::question(
+         this,
+         tr("Discard current script edits?"),
+         tr("Opening a script file will replace the current code editor content.\n\nAny uncompiled edits in the editor will be lost. Continue?"),
+         QMessageBox::StandardButton::No | QMessageBox::StandardButton::Yes,
+         QMessageBox::StandardButton::No
+      );
+      if (choice != QMessageBox::StandardButton::Yes)
+         return;
+   }
+
+   QString targetDir = QDir::currentPath();
+   {
+      auto path = ReachEditorState::get().variantFilePath();
+      if (path && path[0]) {
+         QFileInfo info(QString::fromWCharArray(path));
+         if (info.exists())
+            targetDir = info.absolutePath();
+      }
+   }
+
+   QString fileName = QFileDialog::getOpenFileName(
+      this,
+      tr("Open Script"),
+      targetDir,
+      tr("Megalo Script (*.megalo *.txt);;All Files (*)")
+   );
+   if (fileName.isEmpty())
+      return;
+
+   QFile file(fileName);
+   if (!file.open(QIODevice::ReadOnly)) {
+      QMessageBox::information(this, tr("Unable to open file"), tr("An error occurred while trying to open this file.\n\nSystem error text:\n%1").arg(file.errorString()));
+      return;
+   }
+
+   auto bytes = file.readAll();
+   if (file.error() != QFileDevice::NoError) {
+      QMessageBox::information(this, tr("Unable to open file"), tr("An error occurred while reading this file.\n\nSystem error text:\n%1").arg(file.errorString()));
+      return;
+   }
+
+   code_page->loadCodeText(QString::fromUtf8(bytes), true);
+}
+
+void MegaloScriptEditorWindow::saveScriptAsMegalo() {
+   QString script = this->ui.pageContentScriptCode->currentCodeText();
+
+   QString targetDir = QDir::currentPath();
+   QString suggested = QStringLiteral("script.megalo");
+   {
+      auto path = ReachEditorState::get().variantFilePath();
+      if (path && path[0]) {
+         QFileInfo info(QString::fromWCharArray(path));
+         if (info.exists()) {
+            targetDir = info.absolutePath();
+            auto stem = info.completeBaseName();
+            if (!stem.isEmpty())
+               suggested = stem + QStringLiteral(".megalo");
+         }
+      }
+   }
+
+   QString fileName = QFileDialog::getSaveFileName(
+      this,
+      tr("Save Script As"),
+      QDir(targetDir).filePath(suggested),
+      tr("Megalo Script (*.megalo);;Text File (*.txt);;All Files (*)")
+   );
+   if (fileName.isEmpty())
+      return;
+
+   QSaveFile file(fileName);
+   if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+      QMessageBox::information(this, tr("Unable to save file"), tr("An error occurred while trying to save this file.\n\nSystem error text:\n%1").arg(file.errorString()));
+      return;
+   }
+
+   QByteArray utf8 = script.toUtf8();
+   if (file.write(utf8) != utf8.size()) {
+      QMessageBox::information(this, tr("Unable to save file"), tr("An error occurred while trying to write this file.\n\nSystem error text:\n%1").arg(file.errorString()));
+      file.cancelWriting();
+      return;
+   }
+
+   if (!file.commit()) {
+      QMessageBox::information(this, tr("Unable to save file"), tr("An error occurred while finalizing this file.\n\nSystem error text:\n%1").arg(file.errorString()));
+      return;
+   }
+}
+
 void MegaloScriptEditorWindow::updateSaveMenuItems() {
    auto& editor = ReachEditorState::get();
    if (!editor.variant()) {
+      this->menu_actions.openScript->setEnabled(false);
       this->menu_actions.save->setEnabled(false);
       this->menu_actions.saveAs->setEnabled(false);
+      this->menu_actions.saveScriptAs->setEnabled(false);
       return;
    }
    //
@@ -107,6 +225,8 @@ void MegaloScriptEditorWindow::updateSaveMenuItems() {
          is_resource = QResource(QString::fromStdWString(file)).isValid();
       }
    }
+   this->menu_actions.openScript->setEnabled(true);
    this->menu_actions.save->setEnabled(!is_resource);
    this->menu_actions.saveAs->setEnabled(true);
+   this->menu_actions.saveScriptAs->setEnabled(true);
 }

@@ -21,6 +21,9 @@ class ScriptEditorPageScriptCode : public QWidget {
       //
    public:
       ScriptEditorPageScriptCode(QWidget* parent = nullptr);
+      QString currentCodeText() const;
+      void loadCodeText(const QString& text, bool mark_clean = true);
+      bool hasUnsavedEditorTextChanges() const;
       //
    protected:
       Ui::ScriptEditorPageScriptCode ui;

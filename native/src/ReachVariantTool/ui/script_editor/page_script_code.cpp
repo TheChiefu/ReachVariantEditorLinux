@@ -449,9 +449,7 @@ ScriptEditorPageScriptCode::ScriptEditorPageScriptCode(QWidget* parent) : QWidge
       Megalo::Decompiler decompiler(*variant);
       decompiler.decompile();
       //
-      const QSignalBlocker blocker(this->ui.textEditor);
-      this->ui.textEditor->setPlainText(decompiler.current_content);
-      this->rebuildDynamicAutocompleteSymbols();
+      this->loadCodeText(decompiler.current_content, true);
    });
    QObject::connect(this->ui.buttonCompile, &QPushButton::clicked, [this]() {
       auto& editor = ReachEditorState::get();
@@ -543,6 +541,19 @@ ScriptEditorPageScriptCode::ScriptEditorPageScriptCode(QWidget* parent) : QWidge
          return;
       this->jumpToLogItem(*item);
    });
+}
+QString ScriptEditorPageScriptCode::currentCodeText() const {
+   return this->ui.textEditor->toPlainText();
+}
+void ScriptEditorPageScriptCode::loadCodeText(const QString& text, bool mark_clean) {
+   const QSignalBlocker blocker(this->ui.textEditor);
+   this->ui.textEditor->setPlainText(text);
+   this->rebuildDynamicAutocompleteSymbols();
+   if (mark_clean)
+      this->ui.textEditor->document()->setModified(false);
+}
+bool ScriptEditorPageScriptCode::hasUnsavedEditorTextChanges() const {
+   return this->ui.textEditor->document()->isModified();
 }
 bool ScriptEditorPageScriptCode::isCompileLogCollapsed() const {
    auto sizes = this->ui.splitter->sizes();

@@ -12,12 +12,16 @@ class MegaloScriptEditorWindow : public QDialog {
    protected:
       Ui::MegaloScriptEditorWindow ui;
       struct {
-         QAction* save   = nullptr;
-         QAction* saveAs = nullptr;
+         QAction* openScript   = nullptr;
+         QAction* save         = nullptr;
+         QAction* saveAs       = nullptr;
+         QAction* saveScriptAs = nullptr;
       } menu_actions;
 
       virtual void keyPressEvent(QKeyEvent* e) override; // override needed to handle Esc key
 
    protected slots:
+      void openScriptFromFile();
+      void saveScriptAsMegalo();
       void updateSaveMenuItems();
 };
