@@ -1,6 +1,6 @@
 #include "./headless.h"
 #include <cassert>
-#include <cstdio>
+#include <print>
 #include <QDataStream>
 #include <QFile>
 #include <QSaveFile>
@@ -21,8 +21,7 @@ namespace rvt::headless {
          QString q_path = QString::fromStdWString(w_path);
          QFile   file(q_path);
          if (!file.open(QIODevice::ReadOnly)) {
-            auto error = file.errorString().toStdString();
-            std::fprintf(stderr, "Failed to open the game variant: %s\n", error.c_str());
+            std::println(stderr, "Failed to open the game variant: %1", file.errorString().toStdString());
             return false;
          }
          auto buffer = file.readAll();
@@ -33,17 +32,15 @@ namespace rvt::headless {
             success = variant->read(buffer.data(), buffer.size());
          }
          if (!success) {
-            auto error = file.errorString().toStdString();
-            std::fprintf(stderr, "Failed to open the game variant: %s\n", error.c_str());
+            std::println(stderr, "Failed to open the game variant: %1", file.errorString().toStdString());
             return false;
          }
          {
             auto& log = GameEngineVariantLoadWarningLog::get();
             if (!log.warnings.empty()) {
-               std::fputs("The following warnings were encountered:\n\n", stdout);
+               std::println("The following warnings were encountered:\n");
                for (auto& warning : log.warnings) {
-                  auto text = warning.toStdString();
-                  std::fprintf(stdout, " - %s\n", text.c_str());
+                  std::println(" - {}", warning.toStdString());
                }
             }
          }
@@ -56,15 +53,14 @@ namespace rvt::headless {
    extern bool recompile(const command_line_params& params) {
       QString code;
       if (params.megalo_source.empty()) {
-         std::fputs("No Megalo source file specified.\n", stderr);
+         std::println(stderr, "No Megalo source file specified.");
          return false;
       }
       {
          QString q_path = QString::fromStdWString(params.megalo_source.wstring());
          QFile   file(q_path);
          if (!file.open(QIODevice::ReadOnly)) {
-            auto error = file.errorString().toStdString();
-            std::fprintf(stderr, "Failed to open the Megalo source file: %s\n", error.c_str());
+            std::println(stderr, "Failed to open the Megalo source file: {}", file.errorString().toStdString());
             return false;
          }
          code = QString(file.readAll());
@@ -75,7 +71,7 @@ namespace rvt::headless {
       assert(variant != nullptr);
       auto* mp = variant->get_multiplayer_data();
       if (!mp) {
-         std::fputs("This game variant is not a multiplayer variant, and so cannot have Megalo code.\n", stderr);
+         std::println(stderr, "This game variant is not a multiplayer variant, and so cannot have Megalo code.");
          return false;
       }
 
@@ -83,31 +79,27 @@ namespace rvt::headless {
       compiler.parse(code);
 
       for (auto& item : compiler.get_fatal_errors()) {
-         auto text = item.text.toStdString();
-         std::fprintf(stdout, "[FATAL] Line %d Col %d: %s\n", item.location.line, item.location.col(), text.c_str());
+         std::println("[FATAL] Line {} Col {}: {}", item.location.line, item.location.col(), item.text.toStdString());
       }
       for (auto& item : compiler.get_non_fatal_errors()) {
-         auto text = item.text.toStdString();
-         std::fprintf(stdout, "[ERROR] Line %d Col %d: %s\n", item.location.line, item.location.col(), text.c_str());
+         std::println("[ERROR] Line {} Col {}: {}", item.location.line, item.location.col(), item.text.toStdString());
       }
       for (auto& item : compiler.get_warnings()) {
-         auto text = item.text.toStdString();
-         std::fprintf(stdout, "[WARN:] Line %d Col %d: %s\n", item.location.line, item.location.col(), text.c_str());
+         std::println("[WARN:] Line {} Col {}: {}", item.location.line, item.location.col(), item.text.toStdString());
       }
       for (auto& item : compiler.get_notices()) {
-         auto text = item.text.toStdString();
-         std::fprintf(stdout, "[NOTE:] Line %d Col %d: %s\n", item.location.line, item.location.col(), text.c_str());
+         std::println("[NOTE:] Line {} Col {}: {}", item.location.line, item.location.col(), item.text.toStdString());
       }
 
       if (compiler.has_errors()) {
-         std::fputs("Compilation failed.\n", stdout);
+         std::println("Compilation failed.");
          return false;
       }
 
       {
          auto& list = compiler.get_unresolved_string_references();
          if (!list.empty()) {
-            std::fprintf(stdout, "Creating %zu new strings.\n", list.size());
+            std::println("Creating {} new strings.", list.size());
             for (auto& item : list) {
                item.pending.action = Megalo::Compiler::unresolved_string_pending_action::create;
             }
@@ -129,8 +121,7 @@ namespace rvt::headless {
 
       QSaveFile file(q_path);
       if (!file.open(QIODevice::WriteOnly)) {
-         auto error = file.errorString().toStdString();
-         std::fprintf(stderr, "Unable to open destination file for writing: %s\n", error.c_str());
+         std::println(stderr, "Unable to open destination file for writing: {}", file.errorString().toStdString());
          return false;
       }
 
@@ -141,7 +132,7 @@ namespace rvt::headless {
 
       ReachEditorState::get().variant()->write(save_process);
       if (save_process.variant_is_editor_only()) {
-         std::fputs("The updated game variant exceeds Reach's file format limits. Refusing to save changes.\n", stderr);
+         std::println(stderr, "The updated game variant exceeds Reach's file format limits. Refusing to save changes.");
          file.cancelWriting();
          return false;
       }
@@ -151,7 +142,7 @@ namespace rvt::headless {
       out.writeRawData((const char*)save_process.writer.bytes.data(), save_process.writer.bytes.get_bytespan());
       file.commit();
 
-      std::fputs("Updated game variant has been saved.\n", stderr);
+      std::println(stderr, "Updated game variant has been saved.");
       return true;
    }
 }
