@@ -9,6 +9,7 @@
 class QCompleter;
 class QEvent;
 class QStringListModel;
+class ScriptEditorFindReplaceBar;
 
 class ScriptEditorPageScriptCode : public QWidget {
    Q_OBJECT
@@ -31,6 +32,7 @@ class ScriptEditorPageScriptCode : public QWidget {
       QCompleter* _completer = nullptr;
       QStringListModel* _completionModel = nullptr;
       QStringList _defaultCompletionWords;
+      ScriptEditorFindReplaceBar* _findReplaceBar = nullptr;
       //
       void updateLog(Compiler&);
       void redrawLog();
@@ -39,12 +41,21 @@ class ScriptEditorPageScriptCode : public QWidget {
 
       void updateCodeEditorStyle();
       void setupAutocomplete();
+      void setupFindReplaceBar();
+      void showFindReplaceBar(bool show_replace);
+      void repositionFindReplaceBar();
       void rebuildDynamicAutocompleteSymbols();
       void showAutocompletePopup(bool force = false);
       QString completionPrefixUnderCursor() const;
       QString contextExpressionBeforeCursor() const;
       QStringList completionWordsForContextExpression(const QString&) const;
       QStringList dynamicEnumValuesForType(const QString&) const;
+      int countMatches(const QString&) const;
+      void updateFindReplaceMatchCount();
+      bool findTextWithWrap(const QString&);
+      bool findPreviousWithWrap(const QString&);
+      bool replaceNext(const QString&, const QString&);
+      int replaceAll(const QString&, const QString&);
       void applyCompletion(const QString&);
       static QStringList buildMegaloCompletionWords();
 
@@ -54,4 +65,6 @@ class ScriptEditorPageScriptCode : public QWidget {
       QStringList _dynamicCompletionWords;
       QStringList _dynamicEnumTypes;
       QHash<QString, QStringList> _dynamicEnumValuesByType;
+      QString _lastFindText;
+      QString _lastReplaceText;
 };

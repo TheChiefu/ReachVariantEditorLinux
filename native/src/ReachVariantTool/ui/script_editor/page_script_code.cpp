@@ -1,7 +1,9 @@
 #include "page_script_code.h"
+#include "find_replace_bar.h"
 #include <array>
 #include <utility>
 #include "compiler_unresolved_strings.h"
+#include <QApplication>
 #include <QCompleter>
 #include <QKeyEvent>
 #include <QMessageBox>
@@ -10,6 +12,7 @@
 #include <QScrollBar>
 #include <QShortcut>
 #include <QSet>
+#include <QTextDocument>
 #include <QStringListModel>
 #include <QStringView>
 #include <QTextBlock>
@@ -272,6 +275,15 @@ namespace {
       }
       return out;
    }
+   QString _leading_indentation(const QString& line) {
+      int i = 0;
+      for (; i < line.size(); ++i) {
+         QChar c = line[i];
+         if (c != ' ' && c != '\t')
+            break;
+      }
+      return line.left(i);
+   }
    void _append_unique_case_insensitive(QStringList& list, const QString& value) {
       if (value.isEmpty())
          return;
@@ -396,6 +408,7 @@ ScriptEditorPageScriptCode::ScriptEditorPageScriptCode(QWidget* parent) : QWidge
       new MegaloSyntaxHighlighter(this->ui.textEditor->document());
       this->updateCodeEditorStyle();
       this->setupAutocomplete();
+      this->setupFindReplaceBar();
       QObject::connect(&ReachINI::getForQt(), &cobb::qt::ini::file::settingChanged, this, [this](cobb::ini::setting* setting, cobb::ini::setting_value_union oldValue, cobb::ini::setting_value_union newValue) {
          for (auto* ptr : ini_settings) {
             if (setting == ptr) {
@@ -740,6 +753,217 @@ QStringList ScriptEditorPageScriptCode::dynamicEnumValuesForType(const QString& 
       return {};
    return it.value();
 }
+int ScriptEditorPageScriptCode::countMatches(const QString& find_text) const {
+   if (find_text.isEmpty())
+      return 0;
+   int count = 0;
+   auto* doc = this->ui.textEditor->document();
+   QTextCursor match = doc->find(find_text, 0);
+   while (!match.isNull()) {
+      ++count;
+      match = doc->find(find_text, match.position());
+   }
+   return count;
+}
+void ScriptEditorPageScriptCode::updateFindReplaceMatchCount() {
+   if (!this->_findReplaceBar)
+      return;
+   QString text = this->_findReplaceBar->findText();
+   if (text.isEmpty()) {
+      this->_findReplaceBar->setMatchCount(-1);
+      return;
+   }
+   this->_findReplaceBar->setMatchCount(this->countMatches(text));
+}
+bool ScriptEditorPageScriptCode::findTextWithWrap(const QString& find_text) {
+   if (find_text.isEmpty())
+      return false;
+   if (this->ui.textEditor->find(find_text))
+      return true;
+   auto cursor = this->ui.textEditor->textCursor();
+   cursor.movePosition(QTextCursor::Start);
+   this->ui.textEditor->setTextCursor(cursor);
+   return this->ui.textEditor->find(find_text);
+}
+bool ScriptEditorPageScriptCode::findPreviousWithWrap(const QString& find_text) {
+   if (find_text.isEmpty())
+      return false;
+   if (this->ui.textEditor->find(find_text, QTextDocument::FindBackward))
+      return true;
+   auto cursor = this->ui.textEditor->textCursor();
+   cursor.movePosition(QTextCursor::End);
+   this->ui.textEditor->setTextCursor(cursor);
+   return this->ui.textEditor->find(find_text, QTextDocument::FindBackward);
+}
+bool ScriptEditorPageScriptCode::replaceNext(const QString& find_text, const QString& replace_text) {
+   if (find_text.isEmpty())
+      return false;
+
+   auto cursor = this->ui.textEditor->textCursor();
+   if (cursor.hasSelection() && cursor.selectedText() == find_text) {
+      this->_isApplyingCompletion = true;
+      cursor.insertText(replace_text);
+      this->_isApplyingCompletion = false;
+      this->ui.textEditor->setTextCursor(cursor);
+      this->rebuildDynamicAutocompleteSymbols();
+      return true;
+   }
+   if (!this->findTextWithWrap(find_text))
+      return false;
+
+   cursor = this->ui.textEditor->textCursor();
+   if (!cursor.hasSelection())
+      return false;
+   this->_isApplyingCompletion = true;
+   cursor.insertText(replace_text);
+   this->_isApplyingCompletion = false;
+   this->ui.textEditor->setTextCursor(cursor);
+   this->rebuildDynamicAutocompleteSymbols();
+   return true;
+}
+int ScriptEditorPageScriptCode::replaceAll(const QString& find_text, const QString& replace_text) {
+   if (find_text.isEmpty())
+      return 0;
+
+   int count = 0;
+   auto* doc = this->ui.textEditor->document();
+   QTextCursor edit_cursor(doc);
+   this->_isApplyingCompletion = true;
+   edit_cursor.beginEditBlock();
+
+   QTextCursor match = doc->find(find_text, 0);
+   while (!match.isNull()) {
+      match.insertText(replace_text);
+      ++count;
+      match = doc->find(find_text, match.position());
+   }
+
+   edit_cursor.endEditBlock();
+   this->_isApplyingCompletion = false;
+   this->ui.textEditor->setTextCursor(edit_cursor);
+   this->rebuildDynamicAutocompleteSymbols();
+   return count;
+}
+void ScriptEditorPageScriptCode::setupFindReplaceBar() {
+   if (this->_findReplaceBar)
+      return;
+   this->_findReplaceBar = new ScriptEditorFindReplaceBar(this->ui.textEditor);
+   this->_findReplaceBar->hide();
+   QObject::connect(this->_findReplaceBar, &ScriptEditorFindReplaceBar::findTextChanged, this, [this](const QString& text) {
+      this->_lastFindText = text;
+      this->updateFindReplaceMatchCount();
+      this->_findReplaceBar->clearStatus();
+   });
+   QObject::connect(this->_findReplaceBar, &ScriptEditorFindReplaceBar::requestClose, this, [this]() {
+      this->_findReplaceBar->hide();
+      this->ui.textEditor->setFocus();
+   });
+   QObject::connect(this->_findReplaceBar, &ScriptEditorFindReplaceBar::requestFindNext, this, [this](const QString& find_text) {
+      this->_lastFindText = find_text;
+      if (find_text.isEmpty()) {
+         this->_findReplaceBar->setStatus(tr("Type text to find."), true);
+         return;
+      }
+      bool found = this->findTextWithWrap(find_text);
+      if (!found)
+         this->_findReplaceBar->setStatus(tr("No results."), true);
+      else
+         this->_findReplaceBar->clearStatus();
+      this->updateFindReplaceMatchCount();
+      QTimer::singleShot(0, this, [this]() {
+         if (this->_findReplaceBar && this->_findReplaceBar->isVisible())
+            this->_findReplaceBar->focusFindField();
+      });
+   });
+   QObject::connect(this->_findReplaceBar, &ScriptEditorFindReplaceBar::requestFindPrevious, this, [this](const QString& find_text) {
+      this->_lastFindText = find_text;
+      if (find_text.isEmpty()) {
+         this->_findReplaceBar->setStatus(tr("Type text to find."), true);
+         return;
+      }
+      bool found = this->findPreviousWithWrap(find_text);
+      if (!found)
+         this->_findReplaceBar->setStatus(tr("No results."), true);
+      else
+         this->_findReplaceBar->clearStatus();
+      this->updateFindReplaceMatchCount();
+      QTimer::singleShot(0, this, [this]() {
+         if (this->_findReplaceBar && this->_findReplaceBar->isVisible())
+            this->_findReplaceBar->focusFindField();
+      });
+   });
+   QObject::connect(this->_findReplaceBar, &ScriptEditorFindReplaceBar::requestReplaceNext, this, [this](const QString& find_text, const QString& replace_text) {
+      this->_lastFindText = find_text;
+      this->_lastReplaceText = replace_text;
+      if (find_text.isEmpty()) {
+         this->_findReplaceBar->setStatus(tr("Type text to find."), true);
+         return;
+      }
+      bool replaced = this->replaceNext(find_text, replace_text);
+      if (!replaced)
+         this->_findReplaceBar->setStatus(tr("No results."), true);
+      else
+         this->_findReplaceBar->setStatus(tr("Replaced one match."));
+      this->updateFindReplaceMatchCount();
+      QTimer::singleShot(0, this, [this]() {
+         if (this->_findReplaceBar && this->_findReplaceBar->isVisible())
+            this->_findReplaceBar->focusFindField();
+      });
+   });
+   QObject::connect(this->_findReplaceBar, &ScriptEditorFindReplaceBar::requestReplaceAll, this, [this](const QString& find_text, const QString& replace_text) {
+      this->_lastFindText = find_text;
+      this->_lastReplaceText = replace_text;
+      if (find_text.isEmpty()) {
+         this->_findReplaceBar->setStatus(tr("Type text to find."), true);
+         return;
+      }
+      int replaced = this->replaceAll(find_text, replace_text);
+      if (replaced == 0)
+         this->_findReplaceBar->setStatus(tr("No results."), true);
+      else
+         this->_findReplaceBar->setStatus(tr("Replaced %1 occurrence(s).").arg(replaced));
+      this->updateFindReplaceMatchCount();
+      QTimer::singleShot(0, this, [this]() {
+         if (this->_findReplaceBar && this->_findReplaceBar->isVisible())
+            this->_findReplaceBar->focusFindField();
+      });
+   });
+   this->ui.textEditor->viewport()->installEventFilter(this);
+   QObject::connect(this->ui.textEditor->verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int) {
+      this->repositionFindReplaceBar();
+   });
+   QObject::connect(this->ui.textEditor->horizontalScrollBar(), &QScrollBar::valueChanged, this, [this](int) {
+      this->repositionFindReplaceBar();
+   });
+   this->repositionFindReplaceBar();
+}
+void ScriptEditorPageScriptCode::showFindReplaceBar(bool show_replace) {
+   this->setupFindReplaceBar();
+   QString selected = this->ui.textEditor->textCursor().selectedText();
+   selected.replace(QChar::ParagraphSeparator, QChar(' '));
+   if (!selected.isEmpty())
+      this->_lastFindText = selected;
+   QString find_text = selected.isEmpty() ? this->_lastFindText : selected;
+   if (show_replace)
+      this->_findReplaceBar->showReplace(find_text, this->_lastReplaceText);
+   else
+      this->_findReplaceBar->showFind(find_text);
+   this->updateFindReplaceMatchCount();
+   this->repositionFindReplaceBar();
+}
+void ScriptEditorPageScriptCode::repositionFindReplaceBar() {
+   if (!this->_findReplaceBar)
+      return;
+   this->_findReplaceBar->adjustSize();
+   QRect viewport_rect = this->ui.textEditor->viewport()->geometry();
+   const int margin = 6;
+   int x = viewport_rect.right() - this->_findReplaceBar->width() - margin + 1;
+   if (x < margin)
+      x = margin;
+   int y = viewport_rect.top() + margin;
+   this->_findReplaceBar->move(x, y);
+   this->_findReplaceBar->raise();
+}
 void ScriptEditorPageScriptCode::setupAutocomplete() {
    this->_baseCompletionWords = buildMegaloCompletionWords();
    this->rebuildDynamicAutocompleteSymbols();
@@ -765,6 +989,12 @@ void ScriptEditorPageScriptCode::setupAutocomplete() {
    QObject::connect(shortcut, &QShortcut::activated, this, [this]() {
       this->showAutocompletePopup(true);
    });
+   auto* find_shortcut = new QShortcut(QKeySequence::Find, this->ui.textEditor);
+   QObject::connect(find_shortcut, &QShortcut::activated, this, [this]() { this->showFindReplaceBar(false); });
+   auto* replace_shortcut = new QShortcut(QKeySequence::Replace, this->ui.textEditor);
+   QObject::connect(replace_shortcut, &QShortcut::activated, this, [this]() { this->showFindReplaceBar(true); });
+   auto* replace_ctrl_h_shortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+H")), this->ui.textEditor);
+   QObject::connect(replace_ctrl_h_shortcut, &QShortcut::activated, this, [this]() { this->showFindReplaceBar(true); });
 
    this->ui.textEditor->installEventFilter(this);
    this->_completer->popup()->installEventFilter(this);
@@ -938,6 +1168,9 @@ void ScriptEditorPageScriptCode::applyCompletion(const QString& completion) {
    this->ui.textEditor->setTextCursor(cursor);
 }
 bool ScriptEditorPageScriptCode::eventFilter(QObject* watched, QEvent* event) {
+   if ((watched == this->ui.textEditor || watched == this->ui.textEditor->viewport()) && event->type() == QEvent::Resize)
+      this->repositionFindReplaceBar();
+
    if (this->_completer && event->type() == QEvent::KeyPress) {
       bool from_editor = watched == this->ui.textEditor;
       bool from_popup  = watched == this->_completer->popup();
@@ -946,6 +1179,15 @@ bool ScriptEditorPageScriptCode::eventFilter(QObject* watched, QEvent* event) {
 
       auto* key_event = static_cast<QKeyEvent*>(event);
       auto* popup = this->_completer->popup();
+      if (from_editor && key_event->key() == Qt::Key_Escape && this->_findReplaceBar && this->_findReplaceBar->isVisible()) {
+         this->_findReplaceBar->hide();
+         return true;
+      }
+      if (from_editor && (key_event->key() == Qt::Key_Return || key_event->key() == Qt::Key_Enter) && this->_findReplaceBar && this->_findReplaceBar->isVisible()) {
+         auto* focused = QApplication::focusWidget();
+         if (focused && this->_findReplaceBar->isAncestorOf(focused))
+            return true;
+      }
       if (popup && popup->isVisible()) {
          switch (key_event->key()) {
             case Qt::Key_Escape:
@@ -972,6 +1214,20 @@ bool ScriptEditorPageScriptCode::eventFilter(QObject* watched, QEvent* event) {
                   return true;
                }
                break;
+         }
+      }
+      if (from_editor && (key_event->key() == Qt::Key_Return || key_event->key() == Qt::Key_Enter)) {
+         Qt::KeyboardModifiers mods = key_event->modifiers();
+         if (!(mods & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier))) {
+            auto cursor = this->ui.textEditor->textCursor();
+            QString indent = _leading_indentation(cursor.block().text());
+            this->_isApplyingCompletion = true;
+            cursor.beginEditBlock();
+            cursor.insertText(QStringLiteral("\n") + indent);
+            cursor.endEditBlock();
+            this->_isApplyingCompletion = false;
+            this->ui.textEditor->setTextCursor(cursor);
+            return true;
          }
       }
       if (from_editor && key_event->key() == Qt::Key_Period) {
