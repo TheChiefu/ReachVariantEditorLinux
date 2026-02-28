@@ -37,11 +37,11 @@ ScriptEditorPagePlayerRating::ScriptEditorPagePlayerRating(QWidget* parent) : QW
          mp->playerRatingParams.values[i] = v;
       });
    }
-   QObject::connect(this->ui.showInScoreboard, &QCheckBox::stateChanged, [](int state) {
+   QObject::connect(this->ui.showInScoreboard, &QCheckBox::checkStateChanged, [](Qt::CheckState state) {
       auto mp = ReachEditorState::get().multiplayerData();
       if (!mp)
          return;
-      mp->playerRatingParams.showInScoreboard = (state == Qt::Checked);
+      mp->playerRatingParams.showInScoreboard = (state == Qt::CheckState::Checked);
    });
    //
    this->updateFromVariant(nullptr);

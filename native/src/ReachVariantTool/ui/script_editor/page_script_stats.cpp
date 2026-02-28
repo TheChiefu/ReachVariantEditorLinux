@@ -69,10 +69,10 @@ ScriptEditorPageScriptStats::ScriptEditorPageScriptStats(QWidget* parent) : QWid
             return;
          this->target->sortOrder = (ReachMegaloGameStat::Sort)index;
       });
-      QObject::connect(this->ui.groupByTeam, &QCheckBox::stateChanged, [this](int state) {
+      QObject::connect(this->ui.groupByTeam, &QCheckBox::checkStateChanged, [this](Qt::CheckState state) {
          if (!this->target)
             return;
-         this->target->groupByTeam = state == Qt::Checked;
+         this->target->groupByTeam = state == Qt::CheckState::Checked;
       });
       
       QObject::connect(this->ui.buttonNew, &QPushButton::clicked, [this]() {

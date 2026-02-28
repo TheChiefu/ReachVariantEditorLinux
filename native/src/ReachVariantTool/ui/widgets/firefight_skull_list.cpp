@@ -49,7 +49,7 @@ void FFSkullListWidget::_updateFromTarget() {
    this->_updateCheckbox(this->ui.skullCustomYellow, reach::firefight_skull::yellow);
 }
 void FFSkullListWidget::_setupCheckbox(QCheckBox* widget, reach::firefight_skull skull) {
-   QObject::connect(widget, &QCheckBox::stateChanged, [this, skull](int state) {
+   QObject::connect(widget, &QCheckBox::checkStateChanged, [this, skull](Qt::CheckState state) {
       if (!this->target)
          return;
       uint32_t mask = 1 << (unsigned int)skull;

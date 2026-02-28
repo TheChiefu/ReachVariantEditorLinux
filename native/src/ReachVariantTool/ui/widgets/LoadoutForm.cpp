@@ -6,7 +6,7 @@ LoadoutForm::LoadoutForm(QWidget* parent) : QWidget(parent) {
    ui.setupUi(this);
    {
       QCheckBox* widget = this->ui.loadoutFlagVisible;
-      QObject::connect(widget, &QCheckBox::stateChanged, [this, widget](int state) {
+      QObject::connect(widget, &QCheckBox::checkStateChanged, [this, widget](Qt::CheckState state) {
          auto loadout = this->_getLoadout();
          if (!loadout)
             return;

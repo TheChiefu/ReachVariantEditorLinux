@@ -7,7 +7,7 @@ namespace {
 FFWaveDefinitionWidget::FFWaveDefinitionWidget(QWidget* parent) : QWidget(parent) {
    ui.setupUi(this);
    //
-   QObject::connect(this->ui.fieldUsesDropship, &QCheckBox::stateChanged, [this](int state) {
+   QObject::connect(this->ui.fieldUsesDropship, &QCheckBox::checkStateChanged, [this](Qt::CheckState state) {
       if (this->target)
          this->target->usesDropship = state == Qt::CheckState::Checked;
    });

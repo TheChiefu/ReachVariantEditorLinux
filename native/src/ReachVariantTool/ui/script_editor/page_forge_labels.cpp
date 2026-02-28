@@ -94,19 +94,19 @@ ScriptEditorPageForgeLabels::ScriptEditorPageForgeLabels(QWidget* parent) : QWid
       emit editor.forgeLabelCountChanged();
    });
    //
-   QObject::connect(this->ui.reqFlagTeam, &QCheckBox::stateChanged, [this](int state) {
+   QObject::connect(this->ui.reqFlagTeam, &QCheckBox::checkStateChanged, [this](Qt::CheckState state) {
       if (auto label = this->getLabel()) {
          cobb::modify_bit(label->requirements, Megalo::ReachForgeLabel::requirement_flags::assigned_team, state == Qt::CheckState::Checked);
          this->ui.reqTeam->setDisabled(!label->requires_assigned_team());
       }
    });
-   QObject::connect(this->ui.reqFlagObjectType, &QCheckBox::stateChanged, [this](int state) {
+   QObject::connect(this->ui.reqFlagObjectType, &QCheckBox::checkStateChanged, [this](Qt::CheckState state) {
       if (auto label = this->getLabel()) {
          cobb::modify_bit(label->requirements, Megalo::ReachForgeLabel::requirement_flags::objects_of_type, state == Qt::CheckState::Checked);
          this->ui.reqObjectType->setDisabled(!label->requires_object_type());
       }
    });
-   QObject::connect(this->ui.reqFlagNumber, &QCheckBox::stateChanged, [this](int state) {
+   QObject::connect(this->ui.reqFlagNumber, &QCheckBox::checkStateChanged, [this](Qt::CheckState state) {
       if (auto label = this->getLabel()) {
          cobb::modify_bit(label->requirements, Megalo::ReachForgeLabel::requirement_flags::number, state == Qt::CheckState::Checked);
          this->ui.reqNumber->setDisabled(!label->requires_number());

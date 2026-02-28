@@ -22,7 +22,7 @@
 ///   #include "widget_macros_setup_end.h" // undefines the macros
 //
 #define reach_main_window_setup_flag_checkbox(getter, w, field, mask) \
-   QObject::connect(w, &QCheckBox::stateChanged, [](int state) { \
+   QObject::connect(w, &QCheckBox::checkStateChanged, [](Qt::CheckState state) { \
       auto data = ReachEditorState::get().getter(); \
       if (!data) \
          return; \
@@ -32,7 +32,7 @@
          data->field &= ~ mask ; \
    });
 #define reach_main_window_setup_bool_checkbox(getter, w, field) \
-   QObject::connect(w, &QCheckBox::stateChanged, [](int state) { \
+   QObject::connect(w, &QCheckBox::checkStateChanged, [](Qt::CheckState state) { \
       auto data = ReachEditorState::get().getter(); \
       if (!data) \
          return; \

@@ -207,8 +207,7 @@ namespace cobb::qt {
       //
       // Try named color:
       //
-      QColor out;
-      out.setNamedColor(view);
+      QColor out = QColor::fromString(view);
       if (!out.isValid())
          error = css_color_parse_error::unrecognized_color_name;
       return out;
