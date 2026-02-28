@@ -18,11 +18,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <array>
 #include <QRegularExpressionMatchIterator>
 #include <QString>
-#if __has_include(<QtCore5Compat/QStringRef>)
-   #include <QtCore5Compat/QStringRef>
-#else
-   #include <QStringRef>
-#endif
+#include <QStringView>
 
 #include "../../helpers/ini.h"
 #include "../../services/ini.h"
@@ -137,9 +133,9 @@ namespace {
    // Given a Lua long bracket, e.g. `[[` or `[===[`, extracts the level (number of equal signs) 
    // and the total length of the token. If there is no long bracket, the level is set to -1.
    // 
-   // The first character in the QStringRef should be the first `[`.
+   // The first character in the QStringView should be the first `[`.
    //
-   static void extract_long_bracket(const QStringRef& view, int& level, int& token_length) {
+   static void extract_long_bracket(const QStringView& view, int& level, int& token_length) {
       level        = -1;
       token_length =  0;
       if (view[0] != '[')
@@ -162,7 +158,7 @@ namespace {
       }
    }
 
-   static bool extract_long_bracket_close(const QStringRef& view, int level, int& token_length) {
+   static bool extract_long_bracket_close(const QStringView& view, int level, int& token_length) {
       token_length = 0;
       if (view[0] != ']')
          return false;
@@ -187,7 +183,7 @@ namespace {
       return false;
    }
 
-   static const Keyword* match_keyword(const QStringRef& view, const Keyword* last) {
+   static const Keyword* match_keyword(const QStringView& view, const Keyword* last) {
       auto     size  = view.size();
       Keyword* match = nullptr;
       if (last) {
@@ -217,10 +213,9 @@ namespace {
       }
       return match;
    }
-   static QStringRef extract_word(const QStringRef& view) {
+   static QStringView extract_word(const QStringView& view) {
       int size  = view.size();
       int i     = 0;
-      int brace = 0;
       for (; i < size; ++i) {
          auto c = view[i];
          if (c.isLetterOrNumber())
@@ -229,10 +224,10 @@ namespace {
             continue;
          break;
       }
-      return QStringRef(view.string(), view.position(), i);
+      return view.mid(0, i);
    }
 
-   static const QString* extract_operator(const QStringRef& view) {
+   static const QString* extract_operator(const QStringView& view) {
       for (auto& keyword : operators)
          if (view.startsWith(keyword))
             return &keyword;
@@ -240,7 +235,7 @@ namespace {
    }
 
    // returns length of the number, if there was a valid one at the start of the string
-   static int skip_number(const QStringRef& view) {
+   static int skip_number(const QStringView& view) {
       auto size = view.size();
       bool hex  = false;
       int  i    = 0;
@@ -327,6 +322,7 @@ void MegaloSyntaxHighlighter::highlightBlock(const QString& text) {
    auto initial = state;
    int  start   = 0;
    const auto size = text.size();
+   const QStringView text_view(text);
    //
    const Keyword* last_keyword = nullptr;
    //
@@ -352,7 +348,7 @@ void MegaloSyntaxHighlighter::highlightBlock(const QString& text) {
             if (c == '[') {
                int length =  0;
                int level  = -1;
-               extract_long_bracket(QStringRef(&text, i, size - i), level, length);
+               extract_long_bracket(text_view.mid(i), level, length);
                if (level > BlockState::max_supported_param)
                   level = -1;
                if (level >= 0) {
@@ -371,7 +367,7 @@ void MegaloSyntaxHighlighter::highlightBlock(const QString& text) {
             if (this->features.block_comments) {
                QChar e = (i + 2) < size ? text.at(i + 2) : '\0';
                if (e == '[') {
-                  extract_long_bracket(QStringRef(&text, i + 2, size - i - 2), level, length);
+                  extract_long_bracket(text_view.mid(i + 2), level, length);
                   if (level > BlockState::max_supported_param)
                      level = -1;
                }
@@ -386,7 +382,7 @@ void MegaloSyntaxHighlighter::highlightBlock(const QString& text) {
             continue;
          }
          //
-         auto next = QStringRef(&text, i, size - i);
+         auto next = text_view.mid(i);
          if (!is_keyword_boundary(c)) {
             QChar b = i ? text[i - 1] : '\0';
             if (is_keyword_boundary(b)) {
@@ -424,7 +420,7 @@ void MegaloSyntaxHighlighter::highlightBlock(const QString& text) {
       //
       // We're in some sort of special token.
       //
-      auto next   = QStringRef(&text, i, size - i);
+      auto next   = text_view.mid(i);
       int  length = 0;
       switch (state.code()) {
          case TokenType::String_Simple:

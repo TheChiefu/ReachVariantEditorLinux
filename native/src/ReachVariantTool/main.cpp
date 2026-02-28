@@ -12,6 +12,7 @@
    #include <QDirIterator>
 #endif
 #include <QDir>
+#include <QIcon>
 #include <QStandardPaths>
 
 #include <cstdio>
@@ -129,6 +130,7 @@ int main(int argc, char *argv[]) {
    #endif
 
    QApplication a(argc, argv);
+   a.setWindowIcon(QIcon(":/ReachVariantTool/icon_128px.png"));
    #if _DEBUG
       qDebug() << a.applicationVersion();
    #endif
@@ -159,6 +161,7 @@ int main(int argc, char *argv[]) {
       }
    }
    ReachVariantTool w;
+   w.setWindowIcon(QIcon(":/ReachVariantTool/icon_128px.png"));
    w.show();
    return a.exec();
 }

@@ -22,7 +22,11 @@ class ProgramOptionsDialog : public QDialog {
       }
       void open() Q_DECL_OVERRIDE {
          this->refreshWidgetsFromINI();
-         QDialog::open();
+         this->setModal(false);
+         this->setWindowModality(Qt::WindowModality::NonModal);
+         this->show();
+         this->raise();
+         this->activateWindow();
       }
       //
    private slots:

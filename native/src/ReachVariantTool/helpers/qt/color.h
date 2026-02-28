@@ -1,11 +1,7 @@
 #pragma once
 #include <QColor>
 #include <QString>
-#if __has_include(<QtCore5Compat/QStringRef>)
-   #include <QtCore5Compat/QStringRef>
-#else
-   #include <QStringRef>
-#endif
+#include <QStringView>
 
 namespace cobb::qt {
    enum class css_color_parse_error {
@@ -26,7 +22,7 @@ namespace cobb::qt {
       unrecognized_color_name,
    };
    extern QColor parse_css_color(const QString&, css_color_parse_error&);
-   extern QColor parse_css_color(QStringRef, css_color_parse_error&);
+   extern QColor parse_css_color(QStringView, css_color_parse_error&);
 
    enum class css_color_format {
       hex,

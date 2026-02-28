@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=ReachVariantTool
+Comment=Edit Halo Reach game variants
+TryExec=ReachVariantTool
+Exec=ReachVariantTool %f
+Icon=reachvarianttool
+Terminal=false
+Categories=Game;Utility;
+StartupNotify=true

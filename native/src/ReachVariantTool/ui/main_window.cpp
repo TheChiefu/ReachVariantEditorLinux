@@ -11,7 +11,6 @@
 #include <QResource>
 #include <QSaveFile>
 #include <QString>
-#include <QTextCodec>
 #include <QTextStream>
 #include <QTreeWidget>
 #include <QWidget>

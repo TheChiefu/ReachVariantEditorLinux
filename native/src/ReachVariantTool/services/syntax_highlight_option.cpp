@@ -1,13 +1,9 @@
 #include "syntax_highlight_option.h"
 #include "../helpers/qt/color.h"
-#if __has_include(<QtCore5Compat/QStringRef>)
-   #include <QtCore5Compat/QStringRef>
-#else
-   #include <QStringRef>
-#endif
+#include <QStringView>
 
 namespace {
-   static QStringRef _extractFontRule(const QStringRef& text, bool& error) {
+   static QStringView _extractFontRule(const QStringView& text, bool& error) {
       int size  = text.size();
       int i;
       int paren = 0;
@@ -22,7 +18,7 @@ namespace {
             --paren;
             if (paren < 0) { // more closing parentheses than opening ones
                error = true;
-               return QStringRef();
+               return QStringView();
             }
             continue;
          }
@@ -31,9 +27,9 @@ namespace {
       }
       if (paren) { // unterminated parenthetical
          error = true;
-         return QStringRef();
+         return QStringView();
       }
-      return QStringRef(text.string(), text.position(), i);
+      return text.mid(0, i);
    }
 }
 
@@ -43,8 +39,9 @@ namespace ReachINI {
       error = false;
       //
       int size = text.size();
+      const QStringView text_view(text);
       for (int i = 0; i < size; ++i) {
-         auto  forward = QStringRef(&text, i, size - i);
+         auto  forward = text_view.mid(i);
          QChar c = text[i];
          if (c.isSpace())
             continue;

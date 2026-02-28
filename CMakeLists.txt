@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(ReachVariantToolCore LANGUAGES C CXX)
+include(GNUInstallDirs)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -13,11 +14,7 @@ if(NOT EXISTS "${RVT_DIR}/main.cpp")
    message(FATAL_ERROR "ReachVariantTool sources not found at ${RVT_DIR}")
 endif()
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Gui Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Gui Widgets)
-if(QT_VERSION_MAJOR EQUAL 6)
-   find_package(Qt6 REQUIRED COMPONENTS Core5Compat)
-endif()
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -37,10 +34,6 @@ file(GLOB_RECURSE RVT_APP_SOURCES CONFIGURE_DEPENDS
 )
 
 list(FILTER RVT_APP_SOURCES EXCLUDE REGEX ".*\\.bak$")
-
-if(WIN32)
-   list(APPEND RVT_APP_SOURCES "${RVT_DIR}/ReachVariantTool.rc")
-endif()
 
 file(GLOB RVT_ZLIB_SOURCES CONFIGURE_DEPENDS
    "${RVT_ZLIB_DIR}/*.c"
@@ -64,14 +57,11 @@ target_include_directories(ReachVariantTool PRIVATE
    "${RVT_ZLIB_DIR}"
 )
 target_link_libraries(ReachVariantTool PRIVATE
-   Qt${QT_VERSION_MAJOR}::Core
-   Qt${QT_VERSION_MAJOR}::Gui
-   Qt${QT_VERSION_MAJOR}::Widgets
+   Qt6::Core
+   Qt6::Gui
+   Qt6::Widgets
    rvt_zlib
 )
-if(QT_VERSION_MAJOR EQUAL 6)
-   target_link_libraries(ReachVariantTool PRIVATE Qt6::Core5Compat)
-endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
    target_compile_options(ReachVariantTool PRIVATE -include climits)
@@ -80,4 +70,20 @@ endif()
 if(MSVC)
    target_compile_definitions(ReachVariantTool PRIVATE _CRT_SECURE_NO_WARNINGS)
    target_compile_definitions(rvt_zlib PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
+
+install(TARGETS ReachVariantTool
+   RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+)
+
+if(UNIX AND NOT APPLE)
+   install(FILES
+      "${RVT_DIR}/Resources/icon_128px.png"
+      DESTINATION "${CMAKE_INSTALL_DATADIR}/icons/hicolor/128x128/apps"
+      RENAME "reachvarianttool.png"
+   )
+   install(FILES
+      "${CMAKE_SOURCE_DIR}/packaging/linux/reachvarianttool.desktop"
+      DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
+   )
 endif()

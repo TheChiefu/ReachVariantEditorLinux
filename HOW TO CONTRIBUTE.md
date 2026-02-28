@@ -1,11 +1,15 @@
+In order to contribute to this Linux fork of ReachVariantTool, you'll need to set up your build environment:
 
-In order to contribute to ReachVariantTool, you'll need to set up your build environment:
+* CMake 3.21 or newer
+* A C++23 compiler (GCC or Clang)
+* Qt 6 development packages with Core, Gui, and Widgets modules
 
-* Microsoft Visual Studio 2022 Community
-* [Qt Visual Studio Tools](https://marketplace.visualstudio.com/items?itemName=TheQtCompany.QtVisualStudioTools2019) plug-in
-* Qt version 5.15.2, 64-bit, for MSVC 2019 x64.
+Build locally with:
 
-  [You'll need to set that up in the Qt VS plug-in.](https://doc.qt.io/qtvstools/qtvstools-managing-projects.html#managing-qt-versions) When setting it up, you'll need to select names for the Qt versions; the names used for ReachVariantTool are `5.15.2 MSVC2019 x64`.
+```bash
+cmake -S . -B build
+cmake --build build -j
+```
 
 Anyone wishing to contribute their changes to the main ReachVariantTool project must also agree to [the contributor license agreement](https://gist.github.com/DavidJCobb/cbbac4f8afadfc40cde8ec862ce20bc6) before contributing. This license agreement serves three purposes:
 
