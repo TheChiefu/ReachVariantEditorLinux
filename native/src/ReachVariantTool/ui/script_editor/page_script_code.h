@@ -77,4 +77,5 @@ class ScriptEditorPageScriptCode : public QWidget {
       QString _lastFindText;
       QString _lastReplaceText;
       int _compileLogExpandedSize = 0;
+      bool _compileLogInitialized = false;
 };

@@ -472,6 +472,7 @@ ScriptEditorPageScriptCode::ScriptEditorPageScriptCode(QWidget* parent) : QWidge
       compiler.parse(code);
       //
       this->updateLog(compiler);
+      this->setCompileLogCollapsed(false);
       if (!compiler.has_errors()) {
          auto& unresolved_str = compiler.get_unresolved_string_references();
          if (unresolved_str.size()) {
@@ -484,7 +485,6 @@ ScriptEditorPageScriptCode::ScriptEditorPageScriptCode(QWidget* parent) : QWidge
          }
          compiler.apply();
          emit ReachEditorState::get().variantRecompiled(variant);
-         QMessageBox::information(this, tr("Compiled contents applied!"), tr("The compiled content has been applied."));
       }
    });
    QObject::connect(this->ui.compileLogFilterWarn, &QAbstractButton::toggled, [this](bool checked) {
@@ -1278,6 +1278,11 @@ void ScriptEditorPageScriptCode::applyCompletion(const QString& completion) {
 void ScriptEditorPageScriptCode::showEvent(QShowEvent* event) {
    QWidget::showEvent(event);
    QTimer::singleShot(0, this, [this]() {
+      if (!this->_compileLogInitialized) {
+         this->_compileLogInitialized = true;
+         this->setCompileLogCollapsed(true);
+         return;
+      }
       auto sizes = this->ui.splitter->sizes();
       if (sizes.size() >= 2 && sizes[1] > 0)
          this->_compileLogExpandedSize = sizes[1];
