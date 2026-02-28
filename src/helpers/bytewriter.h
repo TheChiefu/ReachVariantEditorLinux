@@ -3,7 +3,6 @@
 #include <cstdio>
 #include <cstring>
 #include "endianness.h"
-#include "polyfills_cpp20.h"
 #include "type_traits.h"
 
 // NOTE: Some of our code assumes that the bytewriter offset will never be "rewound," i.e. if we finish writing the 

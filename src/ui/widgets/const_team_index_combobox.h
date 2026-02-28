@@ -1,6 +1,6 @@
 #pragma once
 #include <QComboBox>
-#include "../../game_variants/components/megalo/megalo_limits.h"
+#include "../../game_variants/components/megalo/limits.h"
 
 class MegaloConstTeamIndexCombobox : public QComboBox {
    Q_OBJECT

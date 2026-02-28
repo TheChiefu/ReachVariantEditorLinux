@@ -1,6 +1,6 @@
 #pragma once
 #include "../opcode_arg.h"
-#include "../megalo_limits.h"
+#include "../limits.h"
 #include "../../player_traits.h"
 #include "../../../types/multiplayer.h"
 

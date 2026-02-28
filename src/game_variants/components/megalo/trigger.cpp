@@ -1,5 +1,5 @@
 #include "trigger.h"
-#include "megalo_limits.h"
+#include "limits.h"
 #include "opcode_arg_types/all_indices.h"
 #include "../../types/multiplayer.h"
 

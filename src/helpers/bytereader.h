@@ -2,7 +2,6 @@
 #include <cstdint>
 #include <type_traits>
 #include "endianness.h"
-#include "polyfills_cpp20.h"
 
 namespace cobb {
    class bytereader {

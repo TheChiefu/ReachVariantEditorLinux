@@ -1,7 +1,7 @@
 #pragma once
 #include "../opcode_arg.h"
 #include "../../../formats/detailed_enum.h"
-#include "../megalo_limits.h"
+#include "../limits.h"
 
 namespace Megalo {
    class OpcodeArgValueVariantStringID : public OpcodeArgValue {

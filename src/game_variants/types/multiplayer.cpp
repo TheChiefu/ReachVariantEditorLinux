@@ -4,7 +4,7 @@
 
 #include "../components/megalo/actions.h"
 #include "../components/megalo/conditions.h"
-#include "../components/megalo/megalo_limits.h"
+#include "../components/megalo/limits.h"
 #include "../components/megalo/opcode_arg_types/megalo_scope.h"
 
 #include "../../formats/sha1.h"

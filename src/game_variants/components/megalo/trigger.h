@@ -5,7 +5,7 @@
 #include "actions.h"
 #include "code_block.h"
 #include "conditions.h"
-#include "megalo_limits.h"
+#include "limits.h"
 #include "limits_bitnumbers.h"
 #include "forge_label.h"
 #include "../../../helpers/bitnumber.h"
