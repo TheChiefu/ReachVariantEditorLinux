@@ -25,14 +25,14 @@ namespace Megalo {
             return scopes;
          }
          //
-         extern VariableScopeIndicatorValue global_object       = VariableScopeIndicatorValue::make_variable_scope("%w",                  "%w",                      &MegaloVariableScopeObject, VariableScopeIndicatorValue::index_type::none);
-         extern VariableScopeIndicatorValue player_object       = VariableScopeIndicatorValue::make_variable_scope("%w.object[%i]",       "%w's object[%i]",         &MegaloVariableScopePlayer, VariableScopeIndicatorValue::index_type::object);
-         extern VariableScopeIndicatorValue object_object       = VariableScopeIndicatorValue::make_variable_scope("%w.object[%i]",       "%w's object[%i]",         &MegaloVariableScopeObject, VariableScopeIndicatorValue::index_type::object);
-         extern VariableScopeIndicatorValue team_object         = VariableScopeIndicatorValue::make_variable_scope("%w.object[%i]",       "%w's object[%i]",         &MegaloVariableScopeTeam,   VariableScopeIndicatorValue::index_type::object);
-         extern VariableScopeIndicatorValue player_biped        = VariableScopeIndicatorValue("%w.biped",            "%w's biped",              &MegaloVariableScopePlayer, VariableScopeIndicatorValue::index_type::none,   VariableScopeIndicatorValue::flags::is_readonly);
-         extern VariableScopeIndicatorValue player_player_biped = VariableScopeIndicatorValue("%w.player[%i].biped", "%w's player[%i]'s biped", &MegaloVariableScopePlayer, VariableScopeIndicatorValue::index_type::player, VariableScopeIndicatorValue::flags::is_readonly);
-         extern VariableScopeIndicatorValue object_player_biped = VariableScopeIndicatorValue("%w.player[%i].biped", "%w's player[%i]'s biped", &MegaloVariableScopeObject, VariableScopeIndicatorValue::index_type::player, VariableScopeIndicatorValue::flags::is_readonly);
-         extern VariableScopeIndicatorValue team_player_biped   = VariableScopeIndicatorValue("%w.player[%i].biped", "%w's player[%i]'s biped", &MegaloVariableScopeTeam,   VariableScopeIndicatorValue::index_type::player, VariableScopeIndicatorValue::flags::is_readonly);
+          VariableScopeIndicatorValue global_object       = VariableScopeIndicatorValue::make_variable_scope("%w",                  "%w",                      &MegaloVariableScopeObject, VariableScopeIndicatorValue::index_type::none);
+          VariableScopeIndicatorValue player_object       = VariableScopeIndicatorValue::make_variable_scope("%w.object[%i]",       "%w's object[%i]",         &MegaloVariableScopePlayer, VariableScopeIndicatorValue::index_type::object);
+          VariableScopeIndicatorValue object_object       = VariableScopeIndicatorValue::make_variable_scope("%w.object[%i]",       "%w's object[%i]",         &MegaloVariableScopeObject, VariableScopeIndicatorValue::index_type::object);
+          VariableScopeIndicatorValue team_object         = VariableScopeIndicatorValue::make_variable_scope("%w.object[%i]",       "%w's object[%i]",         &MegaloVariableScopeTeam,   VariableScopeIndicatorValue::index_type::object);
+          VariableScopeIndicatorValue player_biped        = VariableScopeIndicatorValue("%w.biped",            "%w's biped",              &MegaloVariableScopePlayer, VariableScopeIndicatorValue::index_type::none,   VariableScopeIndicatorValue::flags::is_readonly);
+          VariableScopeIndicatorValue player_player_biped = VariableScopeIndicatorValue("%w.player[%i].biped", "%w's player[%i]'s biped", &MegaloVariableScopePlayer, VariableScopeIndicatorValue::index_type::player, VariableScopeIndicatorValue::flags::is_readonly);
+          VariableScopeIndicatorValue object_player_biped = VariableScopeIndicatorValue("%w.player[%i].biped", "%w's player[%i]'s biped", &MegaloVariableScopeObject, VariableScopeIndicatorValue::index_type::player, VariableScopeIndicatorValue::flags::is_readonly);
+          VariableScopeIndicatorValue team_player_biped   = VariableScopeIndicatorValue("%w.player[%i].biped", "%w's player[%i]'s biped", &MegaloVariableScopeTeam,   VariableScopeIndicatorValue::index_type::player, VariableScopeIndicatorValue::flags::is_readonly);
       }
    }
    OpcodeArgValueObject::OpcodeArgValueObject() : Variable(scopes) {}

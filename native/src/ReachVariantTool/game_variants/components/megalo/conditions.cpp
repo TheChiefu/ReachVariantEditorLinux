@@ -9,7 +9,7 @@
 #endif
 
 namespace Megalo {
-   extern std::array<ConditionFunction, 18> conditionFunctionList = {{
+    std::array<ConditionFunction, 18> conditionFunctionList = {{
       //
       // The double-curly-braces for this array are NOT a mistake; you should be able to 
       // use single braces but not every compiler handles that correctly.

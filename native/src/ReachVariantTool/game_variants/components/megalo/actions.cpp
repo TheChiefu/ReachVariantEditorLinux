@@ -7,7 +7,7 @@ namespace {
 }
 
 namespace Megalo {
-   extern std::array<ActionFunction, 107> actionFunctionList = {{
+    std::array<ActionFunction, 107> actionFunctionList = {{
       //
       // The double-curly-braces for this array are NOT a mistake; you should be able to 
       // use single braces but not every compiler handles that correctly.
@@ -1123,8 +1123,8 @@ namespace Megalo {
          OpcodeFuncToScriptMapping::make_function("set_hidden", "", {1}, 0)
       ),
    }};
-   extern const ActionFunction& actionFunction_runNestedTrigger = actionFunctionList[20];
-   extern const ActionFunction& actionFunction_runInlineTrigger = actionFunctionList[99];
+    const ActionFunction& actionFunction_runNestedTrigger = actionFunctionList[20];
+    const ActionFunction& actionFunction_runInlineTrigger = actionFunctionList[99];
 
    bool Action::read(cobb::ibitreader& stream, GameVariantDataMultiplayer& mp) noexcept {
       #ifdef _DEBUG

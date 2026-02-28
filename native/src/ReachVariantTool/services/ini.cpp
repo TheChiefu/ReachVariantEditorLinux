@@ -17,7 +17,7 @@ namespace ReachINI {
    // The macro used here intentionally differs from the one used in the H file. Keep the namespaces 
    // synchronized between the two files.
    //
-   #define REACHTOOL_MAKE_INI_SETTING(name, category, value) extern cobb::ini::setting name = cobb::ini::setting(get, #name, category, value);
+   #define REACHTOOL_MAKE_INI_SETTING(name, category, value)  cobb::ini::setting name = cobb::ini::setting(get, #name, category, value);
    namespace CodeEditor {
       REACHTOOL_MAKE_INI_SETTING(bOverrideBackColor,  "CodeEditor", false);
       REACHTOOL_MAKE_INI_SETTING(bOverrideTextColor,  "CodeEditor", false);

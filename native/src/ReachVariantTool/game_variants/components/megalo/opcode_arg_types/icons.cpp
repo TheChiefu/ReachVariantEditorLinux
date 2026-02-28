@@ -3,7 +3,7 @@
 
 namespace Megalo {
    namespace enums {
-      extern DetailedEnum engine_icon = DetailedEnum({
+       DetailedEnum engine_icon = DetailedEnum({
          DetailedEnumValue("flag"),
          DetailedEnumValue("slayer"),
          DetailedEnumValue("oddball"),
@@ -59,7 +59,7 @@ namespace Megalo {
       });
 
       // Most likely tag `ui\chud\bitmaps\variant_items\gametypes.bitmap`
-      extern DetailedEnum hud_widget_icon = DetailedEnum({
+       DetailedEnum hud_widget_icon = DetailedEnum({
          DetailedEnumValue("flag"),
          DetailedEnumValue("slayer"),
          DetailedEnumValue("oddball"),
