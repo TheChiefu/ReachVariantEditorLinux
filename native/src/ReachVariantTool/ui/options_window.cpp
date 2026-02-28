@@ -92,48 +92,53 @@ ProgramOptionsDialog::ProgramOptionsDialog(QWidget* parent) : QDialog(parent) {
          });
       }
       {
-         auto& enable = ReachINI::CodeEditor::bOverrideBackColor;
-         auto& color  = ReachINI::CodeEditor::sBackColor;
-         //
-         auto* e_widget = this->ui.codeEditEnableBackColor;
-         auto* c_widget = this->ui.codeEditBackColor;
-         e_widget->setChecked(enable.current.b);
-         {
-            cobb::qt::css_color_parse_error error;
-            QColor c = cobb::qt::parse_css_color(QString::fromUtf8(color.currentStr.c_str()), error);
-            if (error != cobb::qt::css_color_parse_error::none) {
-               c = cobb::qt::parse_css_color(QString::fromUtf8(color.initialStr.c_str()), error);
+         auto bind_color_override = [this](QCheckBox* toggle_widget, ColorPickerButton* color_widget, cobb::ini::setting& enable, cobb::ini::setting& color) {
+            toggle_widget->setChecked(enable.current.b);
+            {
+               cobb::qt::css_color_parse_error error;
+               QColor c = cobb::qt::parse_css_color(QString::fromUtf8(color.currentStr.c_str()), error);
+               if (error != cobb::qt::css_color_parse_error::none)
+                  c = cobb::qt::parse_css_color(QString::fromUtf8(color.initialStr.c_str()), error);
+               color_widget->setColor(c);
             }
-            c_widget->setColor(c);
-         }
-         QObject::connect(e_widget, &QCheckBox::toggled, this, [&enable, &color](bool checked) {
-            enable.pending.b = checked;
-         });
-         QObject::connect(c_widget, &ColorPickerButton::colorChanged, this, [&enable, &color](const QColor& c) {
-            color.pendingStr = (const char*)cobb::qt::stringify_css_color(c, cobb::qt::css_color_format::rgb).toUtf8();
-         });
-      }
-      {
-         auto& enable = ReachINI::CodeEditor::bOverrideTextColor;
-         auto& color  = ReachINI::CodeEditor::sTextColor;
-         //
-         auto* e_widget = this->ui.codeEditEnableTextColor;
-         auto* c_widget = this->ui.codeEditTextColor;
-         e_widget->setChecked(enable.current.b);
-         {
-            cobb::qt::css_color_parse_error error;
-            QColor c = cobb::qt::parse_css_color(QString::fromUtf8(color.currentStr.c_str()), error);
-            if (error != cobb::qt::css_color_parse_error::none) {
-               c = cobb::qt::parse_css_color(QString::fromUtf8(color.initialStr.c_str()), error);
-            }
-            c_widget->setColor(c);
-         }
-         QObject::connect(e_widget, &QCheckBox::toggled, this, [&enable, &color](bool checked) {
-            enable.pending.b = checked;
-         });
-         QObject::connect(c_widget, &ColorPickerButton::colorChanged, this, [&enable, &color](const QColor& c) {
-            color.pendingStr = (const char*)cobb::qt::stringify_css_color(c, cobb::qt::css_color_format::rgb).toUtf8();
-         });
+            QObject::connect(toggle_widget, &QCheckBox::toggled, this, [&enable](bool checked) {
+               enable.pending.b = checked;
+            });
+            QObject::connect(color_widget, &ColorPickerButton::colorChanged, this, [&color](const QColor& c) {
+               color.pendingStr = (const char*)cobb::qt::stringify_css_color(c, cobb::qt::css_color_format::rgb).toUtf8();
+            });
+         };
+
+         bind_color_override(
+            this->ui.codeEditEnableBackColor,
+            this->ui.codeEditBackColor,
+            ReachINI::CodeEditor::bOverrideBackColor,
+            ReachINI::CodeEditor::sBackColor
+         );
+         bind_color_override(
+            this->ui.codeEditEnableTextColor,
+            this->ui.codeEditTextColor,
+            ReachINI::CodeEditor::bOverrideTextColor,
+            ReachINI::CodeEditor::sTextColor
+         );
+         bind_color_override(
+            this->ui.codeEditEnableLineNumBackColor,
+            this->ui.codeEditLineNumBackColor,
+            ReachINI::CodeEditor::bOverrideLineNumberBackColor,
+            ReachINI::CodeEditor::sLineNumberBackColor
+         );
+         bind_color_override(
+            this->ui.codeEditEnableLineNumTextColor,
+            this->ui.codeEditLineNumTextColor,
+            ReachINI::CodeEditor::bOverrideLineNumberTextColor,
+            ReachINI::CodeEditor::sLineNumberTextColor
+         );
+         bind_color_override(
+            this->ui.codeEditEnableLineNumCurrentColor,
+            this->ui.codeEditLineNumCurrentColor,
+            ReachINI::CodeEditor::bOverrideLineNumberCurrentColor,
+            ReachINI::CodeEditor::sLineNumberCurrentColor
+         );
       }
       #pragma endregion
       #pragma region Syntax highlighting
@@ -319,6 +324,62 @@ void ProgramOptionsDialog::refreshWidgetsFromINI() {
       this->ui.optionFullFilePathsInWindowTitle->setChecked(ReachINI::UIWindowTitle::bShowFullPath.current.b);
       this->ui.optionVariantNameInWindowTitle->setChecked(ReachINI::UIWindowTitle::bShowVariantTitle.current.b);
       this->ui.optionTheme->setText(ReachINI::UIWindowTitle::sTheme.currentStr.c_str());
+   }
+   {  // Code editor
+      {
+         const auto blocker = QSignalBlocker(this->ui.codeEditFont);
+         auto& setting = ReachINI::CodeEditor::sFontFamily;
+         auto family   = QString::fromUtf8(setting.currentStr.c_str());
+         QFont font(family);
+         if (!font.exactMatch()) {
+            family = QString::fromUtf8(setting.initialStr.c_str());
+            font   = QFont(family);
+         }
+         this->ui.codeEditFont->setCurrentFont(font);
+      }
+
+      auto refresh_color_override = [this](QCheckBox* toggle_widget, ColorPickerButton* color_widget, const cobb::ini::setting& enable, const cobb::ini::setting& color) {
+         const auto toggle_blocker = QSignalBlocker(toggle_widget);
+         const auto color_blocker  = QSignalBlocker(color_widget);
+         toggle_widget->setChecked(enable.current.b);
+
+         cobb::qt::css_color_parse_error error;
+         QColor c = cobb::qt::parse_css_color(QString::fromUtf8(color.currentStr.c_str()), error);
+         if (error != cobb::qt::css_color_parse_error::none)
+            c = cobb::qt::parse_css_color(QString::fromUtf8(color.initialStr.c_str()), error);
+         color_widget->setColor(c);
+      };
+
+      refresh_color_override(
+         this->ui.codeEditEnableBackColor,
+         this->ui.codeEditBackColor,
+         ReachINI::CodeEditor::bOverrideBackColor,
+         ReachINI::CodeEditor::sBackColor
+      );
+      refresh_color_override(
+         this->ui.codeEditEnableTextColor,
+         this->ui.codeEditTextColor,
+         ReachINI::CodeEditor::bOverrideTextColor,
+         ReachINI::CodeEditor::sTextColor
+      );
+      refresh_color_override(
+         this->ui.codeEditEnableLineNumBackColor,
+         this->ui.codeEditLineNumBackColor,
+         ReachINI::CodeEditor::bOverrideLineNumberBackColor,
+         ReachINI::CodeEditor::sLineNumberBackColor
+      );
+      refresh_color_override(
+         this->ui.codeEditEnableLineNumTextColor,
+         this->ui.codeEditLineNumTextColor,
+         ReachINI::CodeEditor::bOverrideLineNumberTextColor,
+         ReachINI::CodeEditor::sLineNumberTextColor
+      );
+      refresh_color_override(
+         this->ui.codeEditEnableLineNumCurrentColor,
+         this->ui.codeEditLineNumCurrentColor,
+         ReachINI::CodeEditor::bOverrideLineNumberCurrentColor,
+         ReachINI::CodeEditor::sLineNumberCurrentColor
+      );
    }
 }
 void ProgramOptionsDialog::saveAndClose() {

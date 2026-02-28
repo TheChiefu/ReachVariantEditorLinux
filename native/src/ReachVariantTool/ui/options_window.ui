@@ -282,6 +282,48 @@
             </property>
            </widget>
           </item>
+          <item row="3" column="0">
+           <widget class="QCheckBox" name="codeEditEnableLineNumBackColor">
+            <property name="text">
+             <string>Override line number gutter background</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="ColorPickerButton" name="codeEditLineNumBackColor">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QCheckBox" name="codeEditEnableLineNumTextColor">
+            <property name="text">
+             <string>Override line number text color</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="ColorPickerButton" name="codeEditLineNumTextColor">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QCheckBox" name="codeEditEnableLineNumCurrentColor">
+            <property name="text">
+             <string>Override current line number color</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="ColorPickerButton" name="codeEditLineNumCurrentColor">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

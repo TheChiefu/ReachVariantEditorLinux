@@ -21,8 +21,14 @@ namespace ReachINI {
    namespace CodeEditor {
       REACHTOOL_MAKE_INI_SETTING(bOverrideBackColor,  "CodeEditor", false);
       REACHTOOL_MAKE_INI_SETTING(bOverrideTextColor,  "CodeEditor", false);
+      REACHTOOL_MAKE_INI_SETTING(bOverrideLineNumberBackColor,    "CodeEditor", false);
+      REACHTOOL_MAKE_INI_SETTING(bOverrideLineNumberTextColor,    "CodeEditor", false);
+      REACHTOOL_MAKE_INI_SETTING(bOverrideLineNumberCurrentColor, "CodeEditor", false);
       REACHTOOL_MAKE_INI_SETTING(sBackColor,          "CodeEditor", "rgb(255, 255, 255)");
       REACHTOOL_MAKE_INI_SETTING(sTextColor,          "CodeEditor", "rgb(  0,   0,   0)");
+      REACHTOOL_MAKE_INI_SETTING(sLineNumberBackColor,    "CodeEditor", "rgb( 41,  48,  64)");
+      REACHTOOL_MAKE_INI_SETTING(sLineNumberTextColor,    "CodeEditor", "rgb(158, 171, 194)");
+      REACHTOOL_MAKE_INI_SETTING(sLineNumberCurrentColor, "CodeEditor", "rgb(235, 241, 255)");
       REACHTOOL_MAKE_INI_SETTING(sFontFamily,         "CodeEditor", "Courier New");
       REACHTOOL_MAKE_INI_SETTING(sFormatCommentLine,  "CodeEditor", "rgb(106, 153,  85) italic");
       REACHTOOL_MAKE_INI_SETTING(sFormatCommentBlock, "CodeEditor", "rgb(106, 153,  85) italic");

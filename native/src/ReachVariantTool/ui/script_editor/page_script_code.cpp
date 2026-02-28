@@ -8,10 +8,12 @@
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QListWidget>
+#include <QPlainTextEdit>
 #include <QRegularExpression>
 #include <QScrollBar>
 #include <QShortcut>
 #include <QSet>
+#include <QSplitter>
 #include <QTextDocument>
 #include <QStringListModel>
 #include <QStringView>
@@ -52,8 +54,14 @@ namespace {
    const std::array ini_settings = {
       &ReachINI::CodeEditor::bOverrideBackColor,
       &ReachINI::CodeEditor::bOverrideTextColor,
+      &ReachINI::CodeEditor::bOverrideLineNumberBackColor,
+      &ReachINI::CodeEditor::bOverrideLineNumberTextColor,
+      &ReachINI::CodeEditor::bOverrideLineNumberCurrentColor,
       &ReachINI::CodeEditor::sBackColor,
       &ReachINI::CodeEditor::sTextColor,
+      &ReachINI::CodeEditor::sLineNumberBackColor,
+      &ReachINI::CodeEditor::sLineNumberTextColor,
+      &ReachINI::CodeEditor::sLineNumberCurrentColor,
       &ReachINI::CodeEditor::sFontFamily,
    };
 
@@ -404,6 +412,14 @@ namespace {
 
 ScriptEditorPageScriptCode::ScriptEditorPageScriptCode(QWidget* parent) : QWidget(parent) {
    ui.setupUi(this);
+   this->ui.splitter->setStretchFactor(0, 7);
+   this->ui.splitter->setStretchFactor(1, 3);
+   {
+      auto sizes = this->ui.splitter->sizes();
+      if (sizes.size() >= 2 && sizes[1] > 0)
+         this->_compileLogExpandedSize = sizes[1];
+      this->updateCompileLogCollapseButton();
+   }
    {
       new MegaloSyntaxHighlighter(this->ui.textEditor->document());
       this->updateCodeEditorStyle();
@@ -487,6 +503,18 @@ ScriptEditorPageScriptCode::ScriptEditorPageScriptCode(QWidget* parent) : QWidge
    QObject::connect(this->ui.buttonCopyCompileLog, &QPushButton::clicked, [this]() {
       this->ui.compileLog->copyAllToClipboard();
    });
+   QObject::connect(this->ui.buttonCompileLogCollapse, &QPushButton::clicked, [this]() {
+      auto sizes = this->ui.splitter->sizes();
+      if (sizes.size() < 2)
+         return;
+      this->setCompileLogCollapsed(sizes[1] > 0);
+   });
+   QObject::connect(this->ui.splitter, &QSplitter::splitterMoved, [this](int, int) {
+      auto sizes = this->ui.splitter->sizes();
+      if (sizes.size() >= 2 && sizes[1] > 0)
+         this->_compileLogExpandedSize = sizes[1];
+      this->updateCompileLogCollapseButton();
+   });
    this->ui.compileLog->setCopyTransformFunctor([](QString& out, QListWidgetItem* item) {
       switch ((_icon_type)item->data(role_icon).toInt()) {
          case _icon_type::success:
@@ -517,6 +545,40 @@ ScriptEditorPageScriptCode::ScriptEditorPageScriptCode(QWidget* parent) : QWidge
          return;
       this->jumpToLogItem(*item);
    });
+}
+void ScriptEditorPageScriptCode::setCompileLogCollapsed(bool collapsed) {
+   auto sizes = this->ui.splitter->sizes();
+   if (sizes.size() < 2)
+      return;
+   int total = sizes[0] + sizes[1];
+   if (total <= 0)
+      return;
+   if (collapsed) {
+      if (sizes[1] > 0)
+         this->_compileLogExpandedSize = sizes[1];
+      sizes[0] = total;
+      sizes[1] = 0;
+   } else {
+      int log_size = this->_compileLogExpandedSize;
+      if (log_size <= 0)
+         log_size = total / 3;
+      if (log_size < 96)
+         log_size = 96;
+      if (log_size >= total)
+         log_size = total - 1;
+      if (log_size < 0)
+         log_size = 0;
+      sizes[1] = log_size;
+      sizes[0] = total - log_size;
+   }
+   this->ui.splitter->setSizes(sizes);
+   this->updateCompileLogCollapseButton();
+}
+void ScriptEditorPageScriptCode::updateCompileLogCollapseButton() {
+   auto sizes = this->ui.splitter->sizes();
+   bool collapsed = sizes.size() >= 2 && sizes[1] == 0;
+   this->ui.buttonCompileLogCollapse->setText(collapsed ? QStringLiteral("▸") : QStringLiteral("▾"));
+   this->ui.buttonCompileLogCollapse->setToolTip(collapsed ? tr("Show compiler log") : tr("Hide compiler log"));
 }
 void ScriptEditorPageScriptCode::updateLog(Compiler& compiler) {
    this->_lastNotices  = compiler.get_notices();
@@ -616,6 +678,20 @@ void ScriptEditorPageScriptCode::jumpToLogItem(QListWidgetItem& item) {
 void ScriptEditorPageScriptCode::updateCodeEditorStyle() {
    auto* widget = this->ui.textEditor;
    //
+   auto parse_color_setting = [](const cobb::ini::setting& setting) -> QColor {
+      cobb::qt::css_color_parse_error error;
+      auto value = QString::fromUtf8(setting.currentStr.c_str());
+      auto color = cobb::qt::parse_css_color(value, error);
+      if (error == cobb::qt::css_color_parse_error::none)
+         return color;
+      error = cobb::qt::css_color_parse_error::none;
+      value = QString::fromUtf8(setting.initialStr.c_str());
+      color = cobb::qt::parse_css_color(value, error);
+      if (error == cobb::qt::css_color_parse_error::none)
+         return color;
+      return QColor();
+   };
+
    QString qss;
    {
       const auto& setting = ReachINI::CodeEditor::sFontFamily;
@@ -644,8 +720,19 @@ void ScriptEditorPageScriptCode::updateCodeEditorStyle() {
       if (error == cobb::qt::css_color_parse_error::none)
          qss += QString("color: %1;").arg(data);
    }
-   qss = QString("QTextEdit { %1 }").arg(qss); // needed to prevent settings from bleeding into e.g. the scrollbar
+   qss = QString("QPlainTextEdit { %1 }").arg(qss); // needed to prevent settings from bleeding into e.g. the scrollbar
    widget->setStyleSheet(qss);
+
+   QColor gutter_background;
+   QColor gutter_text;
+   QColor gutter_current_text;
+   if (ReachINI::CodeEditor::bOverrideLineNumberBackColor.current.b)
+      gutter_background = parse_color_setting(ReachINI::CodeEditor::sLineNumberBackColor);
+   if (ReachINI::CodeEditor::bOverrideLineNumberTextColor.current.b)
+      gutter_text = parse_color_setting(ReachINI::CodeEditor::sLineNumberTextColor);
+   if (ReachINI::CodeEditor::bOverrideLineNumberCurrentColor.current.b)
+      gutter_current_text = parse_color_setting(ReachINI::CodeEditor::sLineNumberCurrentColor);
+   widget->setLineNumberAreaColors(gutter_background, gutter_text, gutter_current_text);
 }
 
 QStringList ScriptEditorPageScriptCode::buildMegaloCompletionWords() {
@@ -978,7 +1065,7 @@ void ScriptEditorPageScriptCode::setupAutocomplete() {
    QObject::connect(this->_completer, QOverload<const QString&>::of(&QCompleter::activated), this, [this](const QString& completion) {
       this->applyCompletion(completion);
    });
-   QObject::connect(this->ui.textEditor, &QTextEdit::textChanged, this, [this]() {
+   QObject::connect(this->ui.textEditor, &QPlainTextEdit::textChanged, this, [this]() {
       if (this->_isApplyingCompletion)
          return;
       this->rebuildDynamicAutocompleteSymbols();

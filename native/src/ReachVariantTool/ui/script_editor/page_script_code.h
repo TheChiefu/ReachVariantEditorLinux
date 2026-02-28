@@ -36,6 +36,8 @@ class ScriptEditorPageScriptCode : public QWidget {
       //
       void updateLog(Compiler&);
       void redrawLog();
+      void setCompileLogCollapsed(bool);
+      void updateCompileLogCollapseButton();
 
       void jumpToLogItem(QListWidgetItem&);
 
@@ -67,4 +69,5 @@ class ScriptEditorPageScriptCode : public QWidget {
       QHash<QString, QStringList> _dynamicEnumValuesByType;
       QString _lastFindText;
       QString _lastReplaceText;
+      int _compileLogExpandedSize = 0;
 };
