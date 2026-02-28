@@ -21,6 +21,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdexcept>
 #include <utility>
 #include <vector>
+#include <cstring>
 #include "iterators/pointer_based.h"
 
 namespace cobb {
@@ -48,7 +49,7 @@ namespace cobb {
          to insert elements if that would push the current size past that maximum.
 
    */
-   template<typename T, size_t max_count = std::numeric_limits<size_t>::max()> class indexed_list {
+   template<typename T, size_t MaxCount = std::numeric_limits<size_t>::max()> class indexed_list {
       protected:
          // Code to check if a type has an (index) member. Changes made to detect and avoid 
          // breaking on non-class/non-struct types.
@@ -67,11 +68,11 @@ namespace cobb {
             //
             static bool const value = sizeof(f<Derived>(0)) == 2;
          };
-         template<typename T> static constexpr bool _type_has_index_member_v = _type_has_index_member<T>::value;
+         template<typename X> static constexpr bool _type_has_index_member_v = _type_has_index_member<X>::value;
          //
       public:
          static constexpr bool   type_has_index_member = _type_has_index_member_v<T>;
-         static constexpr size_t max_count = max_count;
+         static constexpr size_t max_count = MaxCount;
          using value_type = T;
          using entry_type = T*;
          using size_type  = size_t;
@@ -83,12 +84,9 @@ namespace cobb {
          using const_reverse_iterator = ::cobb::iterators::pointer_based::ptr_ref_const_reverse_iterator<value_type>;
          //
       protected:
-         template<bool has_index> static void __set_element_index(T& item, size_t i) {}
-         template<> static void __set_element_index<true>(T& item, size_t i) {
-            item.index = i;
-         }
          static void _set_element_index(T& item, size_t i) {
-            __set_element_index<type_has_index_member>(item, i);
+            if constexpr (type_has_index_member)
+               item.index = i;
          }
          template<typename It> It _get_iterator_for_position(const int64_t i) const noexcept {
             if (this->empty())

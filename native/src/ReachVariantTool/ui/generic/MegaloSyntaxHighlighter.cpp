@@ -18,6 +18,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <array>
 #include <QRegularExpressionMatchIterator>
 #include <QString>
+#if __has_include(<QtCore5Compat/QStringRef>)
+   #include <QtCore5Compat/QStringRef>
+#else
+   #include <QStringRef>
+#endif
 
 #include "../../helpers/ini.h"
 #include "../../services/ini.h"

@@ -234,7 +234,11 @@ namespace Megalo {
             return MegaloVariableScopeTemporary;
       }
       assert(false && "Unknown variable scope!");
-      __assume(0); // suppress "not all paths return a value" by telling MSVC this is unreachable
+      #if defined(_MSC_VER)
+         __assume(0); // suppress "not all paths return a value" by telling MSVC this is unreachable
+      #else
+         __builtin_unreachable();
+      #endif
    }
    extern const VariableScope* getScopeObjectForConstant(variable_type s) noexcept {
       switch (s) {

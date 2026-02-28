@@ -1,6 +1,6 @@
 #pragma once
 #include "../opcode_arg.h"
-#include "../limits.h"
+#include "../megalo_limits.h"
 #include "../../../types/multiplayer.h"
 
 namespace Megalo {

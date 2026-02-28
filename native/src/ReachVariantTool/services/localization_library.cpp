@@ -1,6 +1,7 @@
 #include "localization_library.h"
 #include <QDir>
 #include <QFile>
+#include <QStringConverter>
 #include <QTextStream>
 #include <QVector>
 #include "../helpers/string_scanner.h"
@@ -26,13 +27,6 @@ namespace {
       _lang_code("po", reach::language::polish),
    };
    reach::language _code_to_language(const QString& c) {
-      for (int i = 0; i < std::extent<decltype(_languages)>::value; ++i) {
-         if (_languages[i].code.compare(c, Qt::CaseInsensitive) == 0)
-            return _languages[i].value;
-      }
-      return reach::language::not_a_language;
-   }
-   reach::language _code_to_language(const QStringRef& c) {
       for (int i = 0; i < std::extent<decltype(_languages)>::value; ++i) {
          if (_languages[i].code.compare(c, Qt::CaseInsensitive) == 0)
             return _languages[i].value;
@@ -157,19 +151,21 @@ LocalizedStringLibrary::LocalizedStringLibrary() {
       //
       auto   stream  = QTextStream(&file);
       Entry* current = nullptr;
-      stream.setCodec("UTF-8");
+      stream.setEncoding(QStringConverter::Utf8);
       while (!stream.atEnd()) {
          QString line = stream.readLine().trimmed();
+         if (line.isEmpty())
+            continue;
          if (line[0] == '#') // comment
             continue;
          if (line[0] == '[') { // header
             if (!line.endsWith(']'))
                continue;
-            auto name = line.midRef(1, line.size() - 2);
+            auto name = line.mid(1, line.size() - 2);
             if (name.isEmpty())
                continue;
             current = new Entry;
-            current->internal_name = name.toString();
+            current->internal_name = name;
             this->entries.push_back(current);
          }
          if (!current) // skip lines until we find a header.
@@ -177,33 +173,33 @@ LocalizedStringLibrary::LocalizedStringLibrary() {
          auto index = line.indexOf('=');
          if (index <= 0)
             continue;
-         auto key   = line.midRef(0, index).trimmed();
-         auto value = line.midRef(index + 1).trimmed();
+         auto key   = line.mid(0, index).trimmed();
+         auto value = line.mid(index + 1).trimmed();
          if (key.compare(QString("name"), Qt::CaseInsensitive) == 0) {
-            current->friendly_name = value.toString();
+            current->friendly_name = value;
             continue;
          }
          if (key.compare(QString("cate"), Qt::CaseInsensitive) == 0) {
-            current->category = value.toString(); // TODO: make this an enum?
+            current->category = value; // TODO: make this an enum?
             continue;
          }
          if (key.compare(QString("desc"), Qt::CaseInsensitive) == 0) {
-            current->description = value.toString();
+            current->description = value;
             continue;
          }
          if (key.compare(QString("tags"), Qt::CaseInsensitive) == 0) {
             auto vec = value.split(',');
             current->tags.reserve(vec.size());
             for (auto& s : vec)
-               current->tags.push_back(s.trimmed().toString());
+               current->tags.push_back(s.trimmed());
             continue;
          }
          if (key.compare(QString("source"), Qt::CaseInsensitive) == 0) {
-            current->source = value.toString();
+            current->source = value;
             continue;
          }
          if (key.compare(QString("sourcetype"), Qt::CaseInsensitive) == 0) {
-            current->source_type = value.toString(); // TODO: make this an enum?
+            current->source_type = value; // TODO: make this an enum?
             continue;
          }
          if (key.compare(QString("token"), Qt::CaseInsensitive) == 0) {
@@ -232,10 +228,10 @@ LocalizedStringLibrary::LocalizedStringLibrary() {
                if (!ok)
                   continue;
                auto perm = current->get_or_create_permutation(index);
-               perm->content->get_write_access(lang) = cobb::string_scanner::unescape(value.toString()).toStdString();
+               perm->content->get_write_access(lang) = cobb::string_scanner::unescape(value).toStdString();
                continue;
             }
-            current->content->get_write_access(lang) = cobb::string_scanner::unescape(value.toString()).toStdString();
+            current->content->get_write_access(lang) = cobb::string_scanner::unescape(value).toStdString();
          }
       }
    }

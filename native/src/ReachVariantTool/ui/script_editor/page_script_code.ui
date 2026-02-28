@@ -76,8 +76,8 @@
            <pointsize>10</pointsize>
           </font>
          </property>
-         <property name="tabStopWidth">
-          <number>24</number>
+         <property name="tabStopDistance">
+          <double>24.000000000000000</double>
          </property>
          <property name="acceptRichText">
           <bool>false</bool>

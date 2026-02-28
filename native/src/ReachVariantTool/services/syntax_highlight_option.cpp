@@ -1,5 +1,10 @@
 #include "syntax_highlight_option.h"
 #include "../helpers/qt/color.h"
+#if __has_include(<QtCore5Compat/QStringRef>)
+   #include <QtCore5Compat/QStringRef>
+#else
+   #include <QStringRef>
+#endif
 
 namespace {
    static QStringRef _extractFontRule(const QStringRef& text, bool& error) {
@@ -48,19 +53,19 @@ namespace ReachINI {
             if (error)
                return out;
             i += rule.size() - 1; // subtract 1 because our loop will increment it
-            if (rule.compare(QLatin1Literal("bold"), Qt::CaseInsensitive) == 0) {
+            if (rule.compare(QStringLiteral("bold"), Qt::CaseInsensitive) == 0) {
                out.bold = true;
                continue;
             }
-            if (rule.compare(QLatin1Literal("italic"), Qt::CaseInsensitive) == 0) {
+            if (rule.compare(QStringLiteral("italic"), Qt::CaseInsensitive) == 0) {
                out.italic = true;
                continue;
             }
-            if (rule.compare(QLatin1Literal("underline"), Qt::CaseInsensitive) == 0) {
+            if (rule.compare(QStringLiteral("underline"), Qt::CaseInsensitive) == 0) {
                out.underline = true;
                continue;
             }
-            if (rule.startsWith('#') || rule.startsWith(QLatin1Literal("rgb"), Qt::CaseInsensitive) || rule.startsWith(QLatin1Literal("hsl"), Qt::CaseInsensitive)) {
+            if (rule.startsWith('#') || rule.startsWith(QStringLiteral("rgb"), Qt::CaseInsensitive) || rule.startsWith(QStringLiteral("hsl"), Qt::CaseInsensitive)) {
                cobb::qt::css_color_parse_error pe;
                auto color = cobb::qt::parse_css_color(rule, pe);
                if (pe != cobb::qt::css_color_parse_error::none) {

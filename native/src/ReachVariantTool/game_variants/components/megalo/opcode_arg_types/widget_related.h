@@ -2,7 +2,7 @@
 #include "../opcode_arg.h"
 #include "variables/number.h"
 #include "variables/timer.h"
-#include "../limits.h"
+#include "../megalo_limits.h"
 #include "../widgets.h"
 
 class GameVariantDataMultiplayer;

@@ -23,15 +23,12 @@
 #include "../game_variants/types/firefight.h"
 #include "../game_variants/types/multiplayer.h"
 #include "../helpers/ini.h"
-#include "../helpers/steam.h"
 #include "../helpers/stream.h"
 #include "../helpers/qt/tree_widget.h"
 #include "../services/ini.h"
 
 #include "options_window.h"
 #include "script_editor.h"
-
-#include "main_window/debug_helper_functions.h"
 
 namespace {
    ReachVariantTool* _window = nullptr;
@@ -96,10 +93,6 @@ namespace {
       skull_blue,
       skull_yellow,
    };
-
-   inline bool _get_mcc_directory(std::wstring& out) {
-      return cobb::steam::get_game_directory(976730, out);
-   }
 }
 
 /*static*/ ReachVariantTool& ReachVariantTool::get() {
@@ -117,8 +110,8 @@ ReachVariantTool::ReachVariantTool(QWidget *parent) : QMainWindow(parent) {
          // Got the version info. If it's "A.B.C.0", let's strip that trailing ".0" build number.
          //
          auto m = QRegularExpression(R"(^(\d+)\.(\d+)\.(\d+)\.(\d+)$)").match(v); // R"(abc)" creates a string literal in which "abc" needs no escape sequences
-         if (m.hasMatch() && m.capturedRef(4) == "0") {
-            v = QString("%1.%2.%3").arg(m.capturedRef(1)).arg(m.capturedRef(2)).arg(m.capturedRef(3));
+         if (m.hasMatch() && m.captured(4) == "0") {
+            v = QString("%1.%2.%3").arg(m.captured(1)).arg(m.captured(2)).arg(m.captured(3));
          }
          //
          // Display the version info:
@@ -211,55 +204,23 @@ ReachVariantTool::ReachVariantTool(QWidget *parent) : QMainWindow(parent) {
    QObject::connect(this->ui.actionEditScript, &QAction::triggered, [this]() {
       (new MegaloScriptEditorWindow(this))->exec();
    });
-   #if _DEBUG
-      QObject::connect(this->ui.actionDebugMisc, &QAction::triggered, [this]() {
-         //
-         // if I need to quickly test something, I can just throw it in here
-         //
-         QMessageBox::information(this, tr("No test currently set up"), tr("..."));
-      });
-   #else
-      this->ui.actionDebugMisc->setEnabled(false);
-      this->ui.actionDebugMisc->setVisible(false);
-   #endif
-   #if _DEBUG
-      QObject::connect(this->ui.actionDebugbreak, &QAction::triggered, DebugHelperFunctions::break_on_variant);
-      QObject::connect(this->ui.actionDebugExportTriggersText, &QAction::triggered, [this]() { DebugHelperFunctions::export_variant_triggers_english(this); });
-      QObject::connect(this->ui.actionDebugExportStringsText, &QAction::triggered, [this]() { DebugHelperFunctions::export_variant_strings(this); });
-      {
-         auto* action = new QAction("Debug: test fonts", this);
-         QObject::connect(action, &QAction::triggered, [this]() { DebugHelperFunctions::test_loading_hrek_fonts(this); });
-         this->ui.menuTools->addAction(action);
-      }
-   #else
-      this->ui.actionDebugbreak->setEnabled(false);
-      this->ui.actionDebugbreak->setVisible(false);
-      this->ui.actionDebugExportTriggersText->setEnabled(false);
-      this->ui.actionDebugExportTriggersText->setVisible(false);
-      this->ui.actionDebugExportStringsText->setEnabled(false);
-      this->ui.actionDebugExportStringsText->setVisible(false);
-   #endif
+   this->ui.actionDebugMisc->setEnabled(false);
+   this->ui.actionDebugMisc->setVisible(false);
+   this->ui.actionDebugbreak->setEnabled(false);
+   this->ui.actionDebugbreak->setVisible(false);
+   this->ui.actionDebugExportTriggersText->setEnabled(false);
+   this->ui.actionDebugExportTriggersText->setVisible(false);
+   this->ui.actionDebugExportStringsText->setEnabled(false);
+   this->ui.actionDebugExportStringsText->setVisible(false);
+   this->ui.actionHelpWeb->setEnabled(false);
+   this->ui.actionHelpWeb->setVisible(false);
+   this->ui.actionHelpFolder->setEnabled(false);
+   this->ui.actionHelpFolder->setVisible(false);
+   this->ui.menuHelp->menuAction()->setVisible(false);
    {
       this->ui.actionOpen->setShortcut(QKeySequence::Open);
       this->ui.actionSave->setShortcut(QKeySequence::Save);
       this->ui.actionSaveAs->setShortcut(QKeySequence::SaveAs);
-      this->ui.actionHelpFolder->setShortcut(QKeySequence::HelpContents);
-   }
-   {
-      auto path = QDir(QApplication::applicationDirPath()).currentPath() + "/help/"; // ughhhhh
-      auto dir  = QDir(path);
-      if (!dir.exists()) {
-         this->ui.actionHelpWeb->setEnabled(false);
-         this->ui.actionHelpWeb->setToolTip(tr("The documentation folder is missing!", ""));
-         this->ui.actionHelpFolder->setEnabled(false);
-         this->ui.actionHelpFolder->setToolTip(tr("The documentation folder is missing!", ""));
-      }
-      QObject::connect(this->ui.actionHelpWeb, &QAction::triggered, [this]() {
-         ReachEditorState::get().openHelp(this, false);
-      });
-      QObject::connect(this->ui.actionHelpFolder, &QAction::triggered, [this]() {
-         ReachEditorState::get().openHelp(this, true);
-      });
    }
    //
    this->ui.MainContentView->setCurrentIndex(0); // Qt Designer makes the last page you were looking at in the editor the default page; let's just switch to the first page here
@@ -884,7 +845,7 @@ void ReachVariantTool::refreshWindowTitle() {
    std::wstring file = editor.variantFilePath();
    {
       bool is_resource = false;
-      if (file[0] == ':') { // Qt resource?
+      if (!file.empty() && file[0] == ':') { // Qt resource?
          is_resource = QResource(QString::fromStdWString(file)).isValid();
       }
       if (is_resource) {
@@ -893,6 +854,7 @@ void ReachVariantTool::refreshWindowTitle() {
          file = std::filesystem::path(file).filename().wstring();
       }
    }
+   auto file_qt = QString::fromStdWString(file);
    if (ReachINI::UIWindowTitle::bShowVariantTitle.current.b == true) {
       QString variantTitle;
       //
@@ -915,13 +877,13 @@ void ReachVariantTool::refreshWindowTitle() {
          );
       else
          this->setWindowTitle(
-            QString("%1 <%2> - ReachVariantTool").arg(variantTitle).arg(file)
+            QString("%1 <%2> - ReachVariantTool").arg(variantTitle).arg(file_qt)
          );
    } else {
       if (file.empty())
          this->setWindowTitle("ReachVariantTool");
       else
-         this->setWindowTitle(QString("%1 - ReachVariantTool").arg(file));
+         this->setWindowTitle(QString("%1 - ReachVariantTool").arg(file_qt));
    }
 }
 void ReachVariantTool::updateSaveMenuItems() {
@@ -935,7 +897,7 @@ void ReachVariantTool::updateSaveMenuItems() {
    bool is_resource = false;
    {
       std::wstring file = ReachEditorState::get().variantFilePath();
-      if (file[0] == ':') { // Qt resource?
+      if (!file.empty() && file[0] == ':') { // Qt resource?
          is_resource = QResource(QString::fromStdWString(file)).isValid();
       }
    }

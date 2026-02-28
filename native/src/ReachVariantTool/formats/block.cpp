@@ -1,5 +1,6 @@
 #include "block.h"
 #include "../helpers/bytewriter.h"
+#include "../helpers/debugbreak.h"
 #include "../helpers/endianness.h"
 extern "C" {
    #include "../../zlib/zlib.h" // interproject ref

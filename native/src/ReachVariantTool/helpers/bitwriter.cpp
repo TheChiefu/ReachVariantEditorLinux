@@ -1,5 +1,6 @@
 #include "bitwriter.h"
 #include "bytewriter.h"
+#include "debugbreak.h"
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>

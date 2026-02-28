@@ -38,10 +38,6 @@ class ReachEditorState : public QObject {
       ReachFirefightWaveTraits* currentFFWaveTraits = nullptr;
       int8_t                 currentMPTeam = -1;
       //
-      QString dirSavedVariants;
-      QString dirBuiltInVariants;
-      QString dirMatchmakingVariants;
-      //
       struct {
          std::optional<QString> eurostile;
          std::optional<QString> tv_nord;
@@ -84,8 +80,6 @@ class ReachEditorState : public QObject {
       void takeVariant(GameVariant* other, const wchar_t* path) noexcept;
       //
       bool saveVariant(QWidget* parent, bool saveAs);
-      //
-      void openHelp(QWidget* parent, bool folder);
       
    public: // getters
       ReachCustomGameOptions* customGameOptions() noexcept;

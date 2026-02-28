@@ -179,7 +179,6 @@
     <ClCompile Include="helpers\bitwriter.cpp" />
     <ClCompile Include="helpers\bytewriter.cpp" />
     <ClCompile Include="helpers\endianness.cpp" />
-    <ClCompile Include="helpers\files.cpp" />
     <ClCompile Include="helpers\ini\file.cpp" />
     <ClCompile Include="helpers\ini\setting.cpp" />
     <ClCompile Include="helpers\int128.cpp" />
@@ -192,7 +191,6 @@
     <ClCompile Include="helpers\qt\tree_widget.cpp" />
     <ClCompile Include="helpers\qt\widget.cpp" />
     <ClCompile Include="helpers\sha1.cpp" />
-    <ClCompile Include="helpers\steam.cpp" />
     <ClCompile Include="helpers\stream.cpp" />
     <ClCompile Include="helpers\strings.cpp" />
     <ClCompile Include="helpers\string_scanner.cpp" />
@@ -210,7 +208,6 @@
     <ClCompile Include="ui\localized_string_library.cpp" />
     <ClCompile Include="ui\main_window.cpp" />
     <ClCompile Include="services\ini.cpp" />
-    <ClCompile Include="ui\main_window\debug_helper_functions.cpp" />
     <ClCompile Include="ui\main_window\page_firefight_bonus_wave.cpp" />
     <ClCompile Include="ui\main_window\page_firefight_lives.cpp" />
     <ClCompile Include="ui\main_window\page_firefight_metadata.cpp" />
@@ -408,7 +405,6 @@
     <ClInclude Include="helpers\qt\widget.h" />
     <ClInclude Include="helpers\refcounting.h" />
     <ClInclude Include="helpers\standalones\unique_pointer.h" />
-    <ClInclude Include="helpers\steam.h" />
     <ClInclude Include="helpers\string_scanner.h" />
     <ClInclude Include="resource.h" />
     <QtMoc Include="ui\generic\ImageStackWidget.h" />
@@ -420,7 +416,6 @@
     <QtMoc Include="ui\generic\ColorPickerButton.h" />
     <QtMoc Include="services\RVTThemeEngine.h" />
     <ClInclude Include="services\syntax_highlight_option.h" />
-    <ClInclude Include="ui\main_window\debug_helper_functions.h" />
     <QtMoc Include="ui\main_window\page_firefight_metadata.h" />
     <QtMoc Include="ui\main_window\page_firefight_scenario.h" />
     <QtMoc Include="ui\main_window\page_firefight_lives.h" />
@@ -479,10 +474,9 @@
     <ClInclude Include="helpers\bitwise.h" />
     <ClInclude Include="helpers\bitwriter.h" />
     <ClInclude Include="helpers\bytewriter.h" />
+    <ClInclude Include="helpers\debugbreak.h" />
     <ClInclude Include="helpers\endianness.h" />
-    <ClInclude Include="helpers\files.h" />
     <ClInclude Include="helpers\ini.h" />
-    <ClInclude Include="helpers\intrusive_windows_defines.h" />
     <ClInclude Include="helpers\polyfills_cpp20.h" />
     <ClInclude Include="helpers\sha1.h" />
     <ClInclude Include="helpers\stream.h" />

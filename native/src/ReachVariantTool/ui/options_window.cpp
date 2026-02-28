@@ -52,6 +52,15 @@ ProgramOptionsDialog::ProgramOptionsDialog(QWidget* parent) : QDialog(parent) {
          ReachINI::DefaultSavePath::bExcludeMCCBuiltInFolders.pending.b = state == Qt::CheckState::Checked;
       });
    }
+   //
+   // Core-only fork: hide convenience paths that depended on Steam/MCC detection.
+   //
+   this->ui.defaultOpenPathAutoMCCSaved->setVisible(false);
+   this->ui.defaultOpenPathAutoMCCMM->setVisible(false);
+   this->ui.defaultOpenPathAutoMCCBuiltIn->setVisible(false);
+   this->ui.defaultSavePathAutoMCCSaved->setVisible(false);
+   this->ui.defaultSavePathExcludeMCCNative->setVisible(false);
+
    QObject::connect(this->ui.optionFullFilePathsInWindowTitle, &QCheckBox::stateChanged, [](int state) {
       ReachINI::UIWindowTitle::bShowFullPath.pending.b = state == Qt::CheckState::Checked;
    });
@@ -254,14 +263,10 @@ void ProgramOptionsDialog::refreshWidgetsFromINI() {
    }
    {  // Default load directory
       std::vector<QRadioButton*> buttons = {
-         this->ui.defaultOpenPathAutoMCCSaved,
-         this->ui.defaultOpenPathAutoMCCMM,
-         this->ui.defaultOpenPathAutoMCCBuiltIn,
          this->ui.defaultOpenPathCWD,
          this->ui.defaultOpenPathUseCustom,
       };
-      QRadioButton* defaultWidget = nullptr;
-      uint32_t      defaultEnum   = ReachINI::DefaultLoadPath::uPathType.initial.u;
+      QRadioButton* defaultWidget = this->ui.defaultOpenPathCWD;
       bool found = false;
       auto type  = ReachINI::DefaultLoadPath::uPathType.current.u;
       for (auto widget : buttons) {
@@ -270,10 +275,6 @@ void ProgramOptionsDialog::refreshWidgetsFromINI() {
          if (is)
             found = true;
          widget->setChecked(is);
-         if (!found) {
-            if (widget->property("enum") == defaultEnum)
-               defaultWidget = widget;
-         }
       }
       if (!found && defaultWidget) {
          const QSignalBlocker blocker(defaultWidget);
@@ -285,13 +286,11 @@ void ProgramOptionsDialog::refreshWidgetsFromINI() {
    {  // Default save directory
       std::vector<QRadioButton*> buttons = {
          this->ui.defaultSavePathCurrentFile,
-         this->ui.defaultSavePathAutoMCCSaved,
          this->ui.defaultSavePathCWD,
          this->ui.defaultSavePathUseCustom,
       };
-      QRadioButton* defaultWidget = nullptr;
-      uint32_t      defaultEnum   = ReachINI::DefaultSavePath::uPathType.initial.u;
-      bool found = false; // if the setting's current value doesn't match any widget, use the default
+      QRadioButton* defaultWidget = this->ui.defaultSavePathCurrentFile;
+      bool found = false;
       auto type  = ReachINI::DefaultSavePath::uPathType.current.u;
       for (auto widget : buttons) {
          const QSignalBlocker blocker(widget);
@@ -299,10 +298,6 @@ void ProgramOptionsDialog::refreshWidgetsFromINI() {
          if (is)
             found = true;
          widget->setChecked(is);
-         if (!found) {
-            if (widget->property("enum") == defaultEnum)
-               defaultWidget = widget;
-         }
       }
       if (!found && defaultWidget) {
          const QSignalBlocker blocker(defaultWidget);
@@ -326,14 +321,8 @@ void ProgramOptionsDialog::saveAndClose() {
 }
 void ProgramOptionsDialog::defaultLoadTypeChanged() {
    using type = ReachINI::DefaultPathType;
-   type which;
-   if (this->ui.defaultOpenPathAutoMCCSaved->isChecked())
-      which = type::mcc_saved_content;
-   else if (this->ui.defaultOpenPathAutoMCCBuiltIn->isChecked())
-      which = type::mcc_built_in_content;
-   else if (this->ui.defaultOpenPathAutoMCCMM->isChecked())
-      which = type::mcc_matchmaking_content;
-   else if (this->ui.defaultOpenPathCWD->isChecked())
+   type which = type::current_working_directory;
+   if (this->ui.defaultOpenPathCWD->isChecked())
       which = type::current_working_directory;
    else if (this->ui.defaultOpenPathUseCustom->isChecked())
       which = type::custom;
@@ -341,11 +330,9 @@ void ProgramOptionsDialog::defaultLoadTypeChanged() {
 }
 void ProgramOptionsDialog::defaultSaveTypeChanged() {
    using type = ReachINI::DefaultPathType;
-   type which;
+   type which = type::path_of_open_file;
    if (this->ui.defaultSavePathCurrentFile->isChecked())
       which = type::path_of_open_file;
-   else  if (this->ui.defaultSavePathAutoMCCSaved->isChecked())
-      which = type::mcc_saved_content;
    else if (this->ui.defaultSavePathCWD->isChecked())
       which = type::current_working_directory;
    else if (this->ui.defaultSavePathUseCustom->isChecked())

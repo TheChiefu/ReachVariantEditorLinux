@@ -1,7 +1,7 @@
 #pragma once
 #include "../../../../formats/localized_string_table.h"
 #include "../../../../helpers/bitnumber.h"
-#include "../limits.h"
+#include "../megalo_limits.h"
 #include "../opcode_arg.h"
 
 namespace Megalo {

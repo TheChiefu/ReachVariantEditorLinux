@@ -1,9 +1,10 @@
 #include "miscellaneous.h"
+#include <cstddef>
 #include <cstdint>
 
 namespace cobb {
-   void memswap(void* a, void* b, size_t size) noexcept {
-      size_t offset = 0;
+   void memswap(void* a, void* b, std::size_t size) noexcept {
+      std::size_t offset = 0;
       for (; offset + 8 <= size; offset += 8) {
          auto& x = *(uint64_t*)((std::intptr_t)a + offset);
          auto& y = *(uint64_t*)((std::intptr_t)b + offset);

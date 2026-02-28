@@ -14,10 +14,6 @@ class MegaloScriptEditorWindow : public QDialog {
       struct {
          QAction* save   = nullptr;
          QAction* saveAs = nullptr;
-         struct {
-            QAction* web    = nullptr;
-            QAction* folder = nullptr;
-         } help;
       } menu_actions;
 
       virtual void keyPressEvent(QKeyEvent* e) override; // override needed to handle Esc key

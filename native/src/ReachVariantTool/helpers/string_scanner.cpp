@@ -54,8 +54,8 @@ namespace cobb {
          _escape_map_entry('a',  '\a'),
          _escape_map_entry('b',  '\b'),
          _escape_map_entry('f',  '\f'),
-         _escape_map_entry('n',  0xA),
-         _escape_map_entry('r',  0xD),
+         _escape_map_entry('n',  '\n'),
+         _escape_map_entry('r',  '\r'),
          _escape_map_entry('t',  '\t'),
          _escape_map_entry('v',  '\v'),
          // the code '\0' is intentionally omitted, as it will not be interpreted properly

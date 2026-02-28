@@ -15,6 +15,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 #include "./setting.h"
+#include <cstdio>
 
 namespace cobb::ini {
    void setting::send_change_event(setting_value_union old) noexcept {
@@ -28,17 +29,17 @@ namespace cobb::ini {
             out = this->current.b ? "TRUE" : "FALSE";
             break;
          case setting_type::float32:
-            sprintf_s(working, "%f", this->current.f);
+            std::snprintf(working, sizeof(working), "%f", this->current.f);
             working[19] = '\0';
             out = working;
             break;
          case setting_type::integer_signed:
-            sprintf_s(working, "%i", this->current.i);
+            std::snprintf(working, sizeof(working), "%i", this->current.i);
             working[19] = '\0';
             out = working;
             break;
          case setting_type::integer_unsigned:
-            sprintf_s(working, "%u", this->current.u);
+            std::snprintf(working, sizeof(working), "%u", this->current.u);
             working[19] = '\0';
             out = working;
             break;

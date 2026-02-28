@@ -1,6 +1,11 @@
 #pragma once
 #include <QColor>
 #include <QString>
+#if __has_include(<QtCore5Compat/QStringRef>)
+   #include <QtCore5Compat/QStringRef>
+#else
+   #include <QStringRef>
+#endif
 
 namespace cobb::qt {
    enum class css_color_parse_error {

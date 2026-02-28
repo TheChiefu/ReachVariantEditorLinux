@@ -17,9 +17,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #pragma once
 #if __cplusplus > 201703L || _MSVC_LANG > 201703L // MSVC fails to comply with __cplusplus standards as of 2021
    #include <version>
-   #ifdef __cpp_lib_endian // provided by <version>, but IntelliSense and MSVC will not properly warn you of this
-      #include <bit>
-   #endif
+#endif
+#if __has_include(<bit>)
+   #include <bit>
 #endif
 #include <cstdint>
 #include <cstdlib>
@@ -41,14 +41,34 @@ namespace cobb {
    #endif
 
    template<typename T> T byteswap(T v) noexcept {
-      switch (sizeof(T)) {
-         case 1: return v;
-         case 2: return (T)_byteswap_ushort((uint16_t)v);
-         case 4: return (T)_byteswap_ulong ((uint32_t)v);
-         case 8: return (T)_byteswap_uint64((uint64_t)v);
-      }
       static_assert(sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8, "No byteswap intrinsic available for this size.");
-      __assume(0); // let MSVC know this branch should never be reached, so it doesn't warn on not returning a value here
+      if constexpr (sizeof(T) == 1) {
+         return v;
+      } else if constexpr (sizeof(T) == 2) {
+         #ifdef __cpp_lib_byteswap
+            return (T)std::byteswap((uint16_t)v);
+         #elif defined(_MSC_VER)
+            return (T)_byteswap_ushort((uint16_t)v);
+         #else
+            return (T)__builtin_bswap16((uint16_t)v);
+         #endif
+      } else if constexpr (sizeof(T) == 4) {
+         #ifdef __cpp_lib_byteswap
+            return (T)std::byteswap((uint32_t)v);
+         #elif defined(_MSC_VER)
+            return (T)_byteswap_ulong((uint32_t)v);
+         #else
+            return (T)__builtin_bswap32((uint32_t)v);
+         #endif
+      } else {
+         #ifdef __cpp_lib_byteswap
+            return (T)std::byteswap((uint64_t)v);
+         #elif defined(_MSC_VER)
+            return (T)_byteswap_uint64((uint64_t)v);
+         #else
+            return (T)__builtin_bswap64((uint64_t)v);
+         #endif
+      }
    }
 
    //

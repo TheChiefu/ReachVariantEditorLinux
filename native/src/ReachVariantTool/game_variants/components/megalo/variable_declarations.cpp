@@ -152,7 +152,11 @@ namespace Megalo {
          case variable_type::team:   return this->teams;
          case variable_type::timer:  return this->timers;
       }
-      __assume(0); // unreachable
+      #if defined(_MSC_VER)
+         __assume(0); // unreachable
+      #else
+         __builtin_unreachable();
+      #endif
    }
    const VariableDeclarationList& VariableDeclarationSet::variables_by_type(variable_type t) const {
       switch (t) {
@@ -162,7 +166,11 @@ namespace Megalo {
          case variable_type::team:   return this->teams;
          case variable_type::timer:  return this->timers;
       }
-      __assume(0); // unreachable
+      #if defined(_MSC_VER)
+         __assume(0); // unreachable
+      #else
+         __builtin_unreachable();
+      #endif
    }
 
    void VariableDeclarationSet::adopt(VariableDeclarationSet& other) noexcept {

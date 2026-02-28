@@ -12,7 +12,7 @@ namespace {
    // where the supported negative and positive values differ only by their sign (i.e. it's 
    // the same numbers).
    //
-   constexpr uint32_t _percentages[] = {
+   constexpr int32_t _percentages[] = {
       0,
       -10,
       -25,
@@ -41,7 +41,7 @@ namespace {
       500,
       1000
    };
-   constexpr int _percentage_count = std::extent<decltype(_percentages)>::value;
+   constexpr size_t _percentage_count = std::extent<decltype(_percentages)>::value;
 }
 namespace Megalo {
    OpcodeArgTypeinfo OpcodeArgValueTimerRate::typeinfo = OpcodeArgTypeinfo(
@@ -61,7 +61,7 @@ namespace Megalo {
       stream.write(this->value, bitcount);
    }
    void OpcodeArgValueTimerRate::to_string(std::string& out) const noexcept {
-      if (this->value <= _percentage_count) {
+      if (this->value < _percentage_count) {
          cobb::sprintf(out, "%d%%", _percentages[this->value]);
          return;
       }
@@ -82,7 +82,7 @@ namespace Megalo {
             return arg_compile_result::failure();
       }
       //
-      for (int i = 0; i < _percentage_count; ++i) {
+      for (size_t i = 0; i < _percentage_count; ++i) {
          if (_percentages[i] == value) {
             this->value = i;
             return arg_compile_result::success();

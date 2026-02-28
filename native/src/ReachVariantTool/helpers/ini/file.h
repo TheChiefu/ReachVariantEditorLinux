@@ -43,9 +43,9 @@ namespace cobb::ini {
          setting_list settings;
          setting_map  byCategory;
          std::vector<change_callback> changeCallbacks;
-         std::wstring filePath;
-         std::wstring backupFilePath;
-         std::wstring workingFilePath;
+         std::filesystem::path filePath;
+         std::filesystem::path backupFilePath;
+         std::filesystem::path workingFilePath;
          
          struct _pending_category { // state object used when saving INI settings
             //

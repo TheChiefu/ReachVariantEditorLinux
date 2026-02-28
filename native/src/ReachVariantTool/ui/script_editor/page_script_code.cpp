@@ -175,9 +175,9 @@ void ScriptEditorPageScriptCode::redrawLog() {
    for (auto& entry : this->_lastNotices) {
       auto item = new QListWidgetItem;
       item->setText(entry.text);
-      item->setData(role_offset, entry.pos.offset);
-      item->setData(role_line,   entry.pos.line + 1);
-      item->setData(role_col,    entry.pos.col());
+      item->setData(role_offset, entry.location.offset);
+      item->setData(role_line,   entry.location.line + 1);
+      item->setData(role_col,    entry.location.col());
       item->setData(role_icon,   (int)_icon_type::notice);
       item->setIcon(ico_notice);
       widget->addItem(item);
@@ -186,9 +186,9 @@ void ScriptEditorPageScriptCode::redrawLog() {
       for (auto& entry : this->_lastWarnings) {
          auto item = new QListWidgetItem;
          item->setText(entry.text);
-         item->setData(role_offset, entry.pos.offset);
-         item->setData(role_line,   entry.pos.line + 1);
-         item->setData(role_col,    entry.pos.col());
+         item->setData(role_offset, entry.location.offset);
+         item->setData(role_line,   entry.location.line + 1);
+         item->setData(role_col,    entry.location.col());
          item->setData(role_icon,   (int)_icon_type::warning);
          item->setIcon(ico_warning);
          widget->addItem(item);
@@ -198,9 +198,9 @@ void ScriptEditorPageScriptCode::redrawLog() {
       for (auto& entry : this->_lastErrors) {
          auto item = new QListWidgetItem;
          item->setText(entry.text);
-         item->setData(role_offset, entry.pos.offset);
-         item->setData(role_line,   entry.pos.line + 1);
-         item->setData(role_col,    entry.pos.col());
+         item->setData(role_offset, entry.location.offset);
+         item->setData(role_line,   entry.location.line + 1);
+         item->setData(role_col,    entry.location.col());
          item->setData(role_icon,   (int)_icon_type::error);
          item->setIcon(ico_error);
          widget->addItem(item);
@@ -208,9 +208,9 @@ void ScriptEditorPageScriptCode::redrawLog() {
       for (auto& entry : this->_lastFatals) {
          auto item = new QListWidgetItem;
          item->setText(entry.text);
-         item->setData(role_offset, entry.pos.offset);
-         item->setData(role_line,   entry.pos.line + 1);
-         item->setData(role_col,    entry.pos.col());
+         item->setData(role_offset, entry.location.offset);
+         item->setData(role_line,   entry.location.line + 1);
+         item->setData(role_col,    entry.location.col());
          item->setData(role_icon,   (int)_icon_type::fatal);
          item->setIcon(ico_fatal);
          widget->addItem(item);

@@ -1,5 +1,5 @@
 #pragma once
-#include "limits.h"
+#include "megalo_limits.h"
 #include "variables_and_scopes.h"
 #include "opcode_arg_types/all_enums.h"
 #include "opcode_arg_types/variables/number.h"

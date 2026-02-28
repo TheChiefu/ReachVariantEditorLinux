@@ -4,7 +4,6 @@
 
 #include "game_variants/base.h"
 #include "helpers/endianness.h"
-#include "helpers/files.h"
 #include "helpers/stream.h"
 #include "services/ini.h"
 #include "services/RVTThemeEngine.h"
@@ -21,6 +20,10 @@
 #include "./editor_state.h"
 #include "./headless.h"
 
+#if defined(_WIN32)
+   #include <windows.h>
+#endif
+
 static void load_inis() {
    auto legacy_path_str = QApplication::instance()->applicationDirPath();;
    auto modern_path_str = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::AppLocalDataLocation);
@@ -36,22 +39,25 @@ static void load_inis() {
    auto& ini = ReachINI::get();
    ini.set_paths(modern_path);
 
-   bool load_from_modern = !std::filesystem::exists(modern_path);
    if (!std::filesystem::exists(modern_path) && std::filesystem::exists(legacy_path)) {
       //
       // This is, technically, vulnerable to a race condition: files can be created or 
       // deleted between us running the checks, and us trying to load. For a quick and 
       // dirty INI update procedure, though, I don't consider that a serious risk.
       //
-      ini.load(legacy_path);
+      ini.set_paths(legacy_path);
+      ini.load();
       //
       // Force an immediate save, so that the file gets moved.
       //
-      if (ini.save()) {
-         //
-         // Try and delete the old file. Doesn't matter too much if we can't.
-         //
-         std::error_code ec;
+      ini.set_paths(modern_path);
+      ini.save();
+      //
+      // Try and delete the old file. Doesn't matter too much if we can't.
+      //
+      std::error_code ec;
+      if (std::filesystem::exists(modern_path, ec)) {
+         ec.clear();
          std::filesystem::remove(legacy_path, ec);
       }
    } else {

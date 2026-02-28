@@ -23,39 +23,39 @@
 //
 #define reach_main_window_setup_flag_checkbox(getter, w, field, mask) \
    QObject::connect(w, &QCheckBox::stateChanged, [](int state) { \
-      auto data = ReachEditorState::get().##getter##(); \
+      auto data = ReachEditorState::get().getter(); \
       if (!data) \
          return; \
       if (state == Qt::CheckState::Checked) \
-         data->##field |= mask ; \
+         data->field |= mask ; \
       else \
-         data->##field &= ~ mask ; \
+         data->field &= ~ mask ; \
    });
 #define reach_main_window_setup_bool_checkbox(getter, w, field) \
    QObject::connect(w, &QCheckBox::stateChanged, [](int state) { \
-      auto data = ReachEditorState::get().##getter##(); \
+      auto data = ReachEditorState::get().getter(); \
       if (!data) \
          return; \
-      data->##field = (state == Qt::CheckState::Checked) ; \
+      data->field = (state == Qt::CheckState::Checked) ; \
    });
 #define reach_main_window_setup_combobox(getter, w, field) \
    QObject::connect(w, QOverload<int>::of(&QComboBox::currentIndexChanged), [](int value) { \
-      auto data = ReachEditorState::get().##getter##(); \
+      auto data = ReachEditorState::get().getter(); \
       if (!data) \
          return; \
-      data->##field = value; \
+      data->field = value; \
    });
 #define reach_main_window_setup_spinbox(getter, w, field) \
    QObject::connect(w, QOverload<int>::of(&QSpinBox::valueChanged), [](int value) { \
-      auto data = ReachEditorState::get().##getter##(); \
+      auto data = ReachEditorState::get().getter(); \
       if (!data) \
          return; \
-      data->##field = value; \
+      data->field = value; \
    });
 #define reach_main_window_setup_spinbox_dbl(getter, w, field) \
    QObject::connect(w, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [](double value) { \
-      auto data = ReachEditorState::get().##getter##(); \
+      auto data = ReachEditorState::get().getter(); \
       if (!data) \
          return; \
-      data->##field = value; \
+      data->field = value; \
    });

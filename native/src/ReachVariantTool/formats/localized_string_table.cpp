@@ -4,6 +4,7 @@ extern "C" {
 }
 #include "../game_variants/errors.h"
 #include "../game_variants/warnings.h"
+#include "../helpers/debugbreak.h"
 #include "../helpers/strings.h"
 
 #define MEGALO_STRING_TABLE_COLLAPSE_METHOD_BUNGIE     1 // Only optimize single-language strings (Bungie approach)
@@ -263,7 +264,7 @@ void* ReachStringTable::_make_buffer(cobb::ibitreader& stream) const noexcept {
       //
       uint32_t uncompressed_size_2 = *(uint32_t*)(buffer);
       if (uncompressed_size_2 != uncompressed_size)
-         if (_byteswap_ulong(uncompressed_size_2) != uncompressed_size)
+         if (cobb::byteswap(uncompressed_size_2) != uncompressed_size)
             printf("WARNING: String table sizes don't match: Bungie 0x%08X versus zlib 0x%08X.", uncompressed_size, uncompressed_size_2);
       void* final = malloc(uncompressed_size);
       //

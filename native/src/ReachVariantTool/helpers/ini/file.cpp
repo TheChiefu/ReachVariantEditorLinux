@@ -16,19 +16,32 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 #include "./file.h"
 #include <algorithm>
+#include <cctype>
+#include <cstdio>
 #include <fstream>
 #include "../strings.h"
 
 #include "./setting.h"
-
-#include <windows.h>
-#include "../intrusive_windows_defines.h"
 
 namespace {
    constexpr char c_iniComment       = ';';
    constexpr char c_iniCategoryStart = '[';
    constexpr char c_iniCategoryEnd   = ']';
    constexpr char c_iniKeyValueDelim = '=';
+
+   int _ascii_casecmp(const char* a, const char* b) {
+      if (!a || !b)
+         return (a == b) ? 0 : (a ? 1 : -1);
+      for (; *a && *b; ++a, ++b) {
+         auto aa = (unsigned char)*a;
+         auto bb = (unsigned char)*b;
+         aa = (unsigned char)std::tolower(aa);
+         bb = (unsigned char)std::tolower(bb);
+         if (aa != bb)
+            return int(aa) - int(bb);
+      }
+      return int((unsigned char)*a) - int((unsigned char)*b);
+   }
 }
 
 namespace cobb::ini {
@@ -69,8 +82,8 @@ namespace cobb::ini {
       std::filesystem::path b = w;
       w.replace_extension(".ini.tmp");
       b.replace_extension(".ini.bak");
-      this->backupFilePath  = w;
-      this->workingFilePath = b;
+      this->backupFilePath  = b;
+      this->workingFilePath = w;
    }
    void file::set_paths(std::filesystem::path filepath, std::filesystem::path backup, std::filesystem::path working) {
       this->filePath        = filepath;
@@ -79,7 +92,9 @@ namespace cobb::ini {
    }
    
    file::setting_list& file::_get_category_contents(std::string category) {
-      std::transform(category.begin(), category.end(), category.begin(), ::tolower);
+      std::transform(category.begin(), category.end(), category.begin(), [](unsigned char c) {
+         return (char)std::tolower(c);
+      });
       return this->byCategory[category];
    }
    void file::_send_change_event(setting* s, setting_value_union oldValue, setting_value_union newValue) {
@@ -92,7 +107,7 @@ namespace cobb::ini {
          return nullptr;
       for (auto it = this->settings.begin(); it != this->settings.end(); ++it) {
          auto& setting = *it;
-         if (!_stricmp(setting->category, category) && !_stricmp(setting->name, name))
+         if (!_ascii_casecmp(setting->category, category) && !_ascii_casecmp(setting->name, name))
             return setting;
       }
       return nullptr;
@@ -109,11 +124,13 @@ namespace cobb::ini {
       this->settings.push_back(setting);
       //
       std::string category = setting->category;
-      std::transform(category.begin(), category.end(), category.begin(), ::tolower);
+      std::transform(category.begin(), category.end(), category.begin(), [](unsigned char c) {
+         return (char)std::tolower(c);
+      });
       this->byCategory[category].push_back(setting);
    }
    //
-   __declspec(noinline) void file::load() {
+   void file::load() {
       std::ifstream file;
       file.open(this->filePath);
       if (!file) {
@@ -241,7 +258,7 @@ namespace cobb::ini {
       file.close();
       this->abandon_pending_changes();
    };
-   __declspec(noinline) void file::save() {
+   void file::save() {
       for (auto& setting : this->settings) {
          setting->commit_pending_changes();
       }
@@ -312,7 +329,9 @@ namespace cobb::ini {
                      current.write(this, oFile);
                      current = _pending_category(token, line);
                      {
-                        std::transform(token.begin(), token.end(), token.begin(), ::tolower);
+                        std::transform(token.begin(), token.end(), token.begin(), [](unsigned char d) {
+                           return (char)std::tolower(d);
+                        });
                         missingCategories.erase(std::remove(missingCategories.begin(), missingCategories.end(), token), missingCategories.end());
                      }
                      break;
@@ -355,11 +374,29 @@ namespace cobb::ini {
          }
       }
       oFile.close();
-      bool success = ReplaceFileW(this->filePath.c_str(), this->workingFilePath.c_str(), this->backupFilePath.c_str(), 0, 0, 0);
-      if (!success) {
-         //if (!PathFileExists(_getINIPath().c_str())) {
-            success = MoveFileExW(this->workingFilePath.c_str(), this->filePath.c_str(), MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH);
-         //}
+      std::error_code ec;
+      if (std::filesystem::exists(this->filePath, ec)) {
+         ec.clear();
+         std::filesystem::copy_file(
+            this->filePath,
+            this->backupFilePath,
+            std::filesystem::copy_options::overwrite_existing,
+            ec
+         );
+      }
+      ec.clear();
+      std::filesystem::rename(this->workingFilePath, this->filePath, ec);
+      if (ec) {
+         ec.clear();
+         std::filesystem::copy_file(
+            this->workingFilePath,
+            this->filePath,
+            std::filesystem::copy_options::overwrite_existing,
+            ec
+         );
+         if (!ec) {
+            std::filesystem::remove(this->workingFilePath, ec);
+         }
       }
    }
    //

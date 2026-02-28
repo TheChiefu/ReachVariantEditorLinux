@@ -12,30 +12,30 @@
       { \
          auto widget = w; \
          const QSignalBlocker blocker(widget); \
-         widget->setCurrentIndex((int)data->##field ); \
+         widget->setCurrentIndex((int)data->field ); \
       };
    #define reach_main_window_update_flag_checkbox(w, field, mask) \
       { \
          auto widget = w; \
          const QSignalBlocker blocker(widget); \
-         widget->setChecked((data->##field & mask ) != 0); \
+         widget->setChecked((data->field & mask ) != 0); \
       };
    #define reach_main_window_update_bool_checkbox(w, field) \
       { \
          auto widget = w; \
          const QSignalBlocker blocker(widget); \
-         widget->setChecked(data->##field ); \
+         widget->setChecked(data->field ); \
       };
    #define reach_main_window_update_spinbox(w, field) \
       { \
          auto widget = w; \
          const QSignalBlocker blocker(widget); \
-         widget->setValue((int)data->##field ); \
+         widget->setValue((int)data->field ); \
       };
    #define reach_main_window_update_spinbox_dbl(w, field) \
       { \
          auto widget = w; \
          const QSignalBlocker blocker(widget); \
-         widget->setValue((double)data->##field ); \
+         widget->setValue((double)data->field ); \
       };
 #pragma endregion

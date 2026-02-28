@@ -30,7 +30,7 @@ namespace Megalo {
    #define megalo_opcode_arg_value_enum(name) \
       class name : public OpcodeArgValueEnumSuperclass { \
          public: \
-            name##(); \
+            name(); \
             static OpcodeArgTypeinfo typeinfo; \
             megalo_opcode_arg_value_make_create_override; \
       };

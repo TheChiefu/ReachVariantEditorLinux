@@ -15,8 +15,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 #include "strings.h"
+#include <algorithm>
+#include <cctype>
+#include <cerrno>
 #include <cstdarg>
 #include <cstdint>
+#include <cstdlib>
 #include <cwctype>
 
 namespace cobb {
@@ -50,10 +54,15 @@ namespace cobb {
       va_end(args);
    };
    int strieq(const std::string& a, const std::string& b) {
-      int length = a.size();
-      if (length != b.size())
+      if (a.size() != b.size())
          return false;
-      return _strnicmp(a.c_str(), b.c_str(), length) == 0;
+      for (size_t i = 0; i < a.size(); ++i) {
+         auto ac = static_cast<unsigned char>(a[i]);
+         auto bc = static_cast<unsigned char>(b[i]);
+         if (std::tolower(ac) != std::tolower(bc))
+            return false;
+      }
+      return true;
    }
    //
    bool string_says_false(const char* str) {

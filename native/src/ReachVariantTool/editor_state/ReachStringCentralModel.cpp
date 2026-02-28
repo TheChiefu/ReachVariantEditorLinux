@@ -1,4 +1,5 @@
 #include "./ReachStringCentralModel.h"
+#include <climits>
 #include <QFont>
 #include "../game_variants/types/multiplayer.h"
 #include "../editor_state.h"

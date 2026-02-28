@@ -15,6 +15,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 #pragma once
+#include <cstddef>
 
 namespace cobb {
    namespace iterators {
@@ -31,9 +32,9 @@ namespace cobb {
                iterator(value_type* v) : item(v) {}
                iterator(void* v) : item((value_type*)v) {}
                iterator(reference r) : item(&r) {}
-               value_type operator->() const noexcept { return *item; }
-               value_type operator*() const noexcept { return *item; }
-               value_type operator[](size_t i) const noexcept { return *(item + i); }
+               value_type* operator->() const noexcept { return item; }
+               reference operator*() const noexcept { return *item; }
+               reference operator[](size_t i) const noexcept { return *(item + i); }
                iterator& operator+=(size_t i) noexcept { this->item += i; return *this; }
                iterator& operator-=(size_t i) noexcept { this->item -= i; return *this; }
                iterator operator+(size_t i) const noexcept {
@@ -58,17 +59,17 @@ namespace cobb {
             protected:
                const value_type* item = nullptr;
                //
-               using reference = value_type&;
+               using reference = const value_type&;
                //
             public:
                const_iterator() {}
                const_iterator(std::nullptr_t) : item(nullptr) {}
-               const_iterator(value_type* v) : item(v) {}
+               const_iterator(const value_type* v) : item(v) {}
                const_iterator(void* v) : item((value_type*)v) {}
                const_iterator(reference r) : item(&r) {}
-               const value_type operator->() const noexcept { return *item; }
-               const value_type operator*() const noexcept { return *item; }
-               const value_type operator[](size_t i) const noexcept { return *(item + i); }
+               const value_type* operator->() const noexcept { return item; }
+               reference operator*() const noexcept { return *item; }
+               reference operator[](size_t i) const noexcept { return *(item + i); }
                const_iterator& operator+=(size_t i) noexcept { this->item += i; return *this; }
                const_iterator& operator-=(size_t i) noexcept { this->item -= i; return *this; }
                const_iterator operator+(size_t i) const noexcept {
@@ -93,23 +94,59 @@ namespace cobb {
             public:
                using iterator<value_type>::iterator;
                //
-               reverse_iterator& operator+=(size_t i) noexcept { return iterator::operator-=(i); }
-               reverse_iterator& operator-=(size_t i) noexcept { return iterator::operator+=(i); }
-               reverse_iterator operator+(size_t i) const noexcept { return iterator::operator-(i); }
-               reverse_iterator operator-(size_t i) const noexcept { return iterator::operator+(i); }
-               reverse_iterator& operator++() noexcept { return iterator::operator--(); }
-               reverse_iterator& operator--() noexcept { return iterator::operator++(); }
+               reverse_iterator& operator+=(size_t i) noexcept {
+                  this->item -= i;
+                  return *this;
+               }
+               reverse_iterator& operator-=(size_t i) noexcept {
+                  this->item += i;
+                  return *this;
+               }
+               reverse_iterator operator+(size_t i) const noexcept {
+                  auto temp = *this;
+                  return temp += i;
+               }
+               reverse_iterator operator-(size_t i) const noexcept {
+                  auto temp = *this;
+                  return temp -= i;
+               }
+               reverse_iterator& operator++() noexcept {
+                  --this->item;
+                  return *this;
+               }
+               reverse_iterator& operator--() noexcept {
+                  ++this->item;
+                  return *this;
+               }
          };
          template<typename value_type> class const_reverse_iterator : public const_iterator<value_type> {
             public:
                using const_iterator<value_type>::const_iterator;
                //
-               const_reverse_iterator& operator+=(size_t i) noexcept { return const_iterator::operator-=(i); }
-               const_reverse_iterator& operator-=(size_t i) noexcept { return const_iterator::operator+=(i); }
-               const_reverse_iterator operator+(size_t i) const noexcept { return const_iterator::operator-(i); }
-               const_reverse_iterator operator-(size_t i) const noexcept { return const_iterator::operator+(i); }
-               const_reverse_iterator& operator++() noexcept { return const_iterator::operator--(); }
-               const_reverse_iterator& operator--() noexcept { return const_iterator::operator++(); }
+               const_reverse_iterator& operator+=(size_t i) noexcept {
+                  this->item -= i;
+                  return *this;
+               }
+               const_reverse_iterator& operator-=(size_t i) noexcept {
+                  this->item += i;
+                  return *this;
+               }
+               const_reverse_iterator operator+(size_t i) const noexcept {
+                  auto temp = *this;
+                  return temp += i;
+               }
+               const_reverse_iterator operator-(size_t i) const noexcept {
+                  auto temp = *this;
+                  return temp -= i;
+               }
+               const_reverse_iterator& operator++() noexcept {
+                  --this->item;
+                  return *this;
+               }
+               const_reverse_iterator& operator--() noexcept {
+                  ++this->item;
+                  return *this;
+               }
          };
          //
          template<typename value_type> class ptr_ref_iterator {
@@ -135,11 +172,11 @@ namespace cobb {
                ptr_ref_iterator& operator+=(size_t i) noexcept { this->item += i; return *this; }
                ptr_ref_iterator& operator-=(size_t i) noexcept { this->item -= i; return *this; }
                ptr_ref_iterator operator+(size_t i) const noexcept {
-                  iterator temp = *this;
+                  ptr_ref_iterator temp = *this;
                   return temp += i;
                }
                ptr_ref_iterator operator-(size_t i) const noexcept {
-                  iterator temp = *this;
+                  ptr_ref_iterator temp = *this;
                   return temp -= i;
                }
                ptr_ref_iterator& operator++() noexcept { ++this->item; return *this; }
@@ -170,11 +207,11 @@ namespace cobb {
                ptr_ref_const_iterator& operator+=(size_t i) noexcept { this->item += i; return *this; }
                ptr_ref_const_iterator& operator-=(size_t i) noexcept { this->item -= i; return *this; }
                ptr_ref_const_iterator operator+(size_t i) const noexcept {
-                  const_iterator temp = *this;
+                  ptr_ref_const_iterator temp = *this;
                   return temp += i;
                }
                ptr_ref_const_iterator operator-(size_t i) const noexcept {
-                  const_iterator temp = *this;
+                  ptr_ref_const_iterator temp = *this;
                   return temp -= i;
                }
                ptr_ref_const_iterator& operator++() noexcept { ++this->item; return *this; }
@@ -191,23 +228,59 @@ namespace cobb {
             public:
                using ptr_ref_iterator<value_type>::ptr_ref_iterator;
                //
-               ptr_ref_reverse_iterator& operator+=(size_t i) noexcept { return iterator::operator-=(i); }
-               ptr_ref_reverse_iterator& operator-=(size_t i) noexcept { return iterator::operator+=(i); }
-               ptr_ref_reverse_iterator operator+(size_t i) const noexcept { return iterator::operator-(i); }
-               ptr_ref_reverse_iterator operator-(size_t i) const noexcept { return iterator::operator+(i); }
-               ptr_ref_reverse_iterator& operator++() noexcept { return iterator::operator--(); }
-               ptr_ref_reverse_iterator& operator--() noexcept { return iterator::operator++(); }
+               ptr_ref_reverse_iterator& operator+=(size_t i) noexcept {
+                  this->item -= i;
+                  return *this;
+               }
+               ptr_ref_reverse_iterator& operator-=(size_t i) noexcept {
+                  this->item += i;
+                  return *this;
+               }
+               ptr_ref_reverse_iterator operator+(size_t i) const noexcept {
+                  auto temp = *this;
+                  return temp += i;
+               }
+               ptr_ref_reverse_iterator operator-(size_t i) const noexcept {
+                  auto temp = *this;
+                  return temp -= i;
+               }
+               ptr_ref_reverse_iterator& operator++() noexcept {
+                  --this->item;
+                  return *this;
+               }
+               ptr_ref_reverse_iterator& operator--() noexcept {
+                  ++this->item;
+                  return *this;
+               }
          };
          template<typename value_type> class ptr_ref_const_reverse_iterator : public ptr_ref_const_iterator<value_type> {
             public:
                using ptr_ref_const_iterator<value_type>::ptr_ref_const_iterator;
                //
-               ptr_ref_const_reverse_iterator& operator+=(size_t i) noexcept { return const_iterator::operator-=(i); }
-               ptr_ref_const_reverse_iterator& operator-=(size_t i) noexcept { return const_iterator::operator+=(i); }
-               ptr_ref_const_reverse_iterator operator+(size_t i) const noexcept { return const_iterator::operator-(i); }
-               ptr_ref_const_reverse_iterator operator-(size_t i) const noexcept { return const_iterator::operator+(i); }
-               ptr_ref_const_reverse_iterator& operator++() noexcept { return const_iterator::operator--(); }
-               ptr_ref_const_reverse_iterator& operator--() noexcept { return const_iterator::operator++(); }
+               ptr_ref_const_reverse_iterator& operator+=(size_t i) noexcept {
+                  this->item -= i;
+                  return *this;
+               }
+               ptr_ref_const_reverse_iterator& operator-=(size_t i) noexcept {
+                  this->item += i;
+                  return *this;
+               }
+               ptr_ref_const_reverse_iterator operator+(size_t i) const noexcept {
+                  auto temp = *this;
+                  return temp += i;
+               }
+               ptr_ref_const_reverse_iterator operator-(size_t i) const noexcept {
+                  auto temp = *this;
+                  return temp -= i;
+               }
+               ptr_ref_const_reverse_iterator& operator++() noexcept {
+                  --this->item;
+                  return *this;
+               }
+               ptr_ref_const_reverse_iterator& operator--() noexcept {
+                  ++this->item;
+                  return *this;
+               }
          };
       }
    }

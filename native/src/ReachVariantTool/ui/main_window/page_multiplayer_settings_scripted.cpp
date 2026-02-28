@@ -72,21 +72,21 @@ void PageMPSettingsScripted::_renderOptionRow(uint32_t i, QGridLayout* layout, c
       //
       auto widget = new QSpinBox(container);
       widget->setProperty("MegaloOptionIndex", i);
-      widget->setMinimum(option.rangeMin->value);
-      widget->setMaximum(option.rangeMax->value);
+      widget->setMinimum(static_cast<int>(option.rangeMin->value));
+      widget->setMaximum(static_cast<int>(option.rangeMax->value));
       widget->setSingleStep(1);
-      widget->setValue(option.rangeCurrent);
+      widget->setValue(static_cast<int>(option.rangeCurrent));
       widget->setAlignment(Qt::AlignRight);
       QObject::connect(widget, QOverload<int>::of(&QSpinBox::valueChanged), [widget](int v) { _onMegaloSliderChange(widget, v); });
       if (desc)
          widget->setToolTip(QString::fromUtf8(desc->get_content(reach::language::english).c_str()));
       //
       auto labelMin = new QLabel(container);
-      labelMin->setText(QString::fromUtf8((const char*)u8"%1 \u2264 ").arg(option.rangeMin->value));
+      labelMin->setText(QString::fromUtf8((const char*)u8"%1 \u2264 ").arg(static_cast<int>(option.rangeMin->value)));
       labelMin->setBuddy(widget);
       labelMin->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
       auto labelMax = new QLabel(container);
-      labelMax->setText(QString::fromUtf8((const char*)u8" \u2264 %1").arg(option.rangeMax->value));
+      labelMax->setText(QString::fromUtf8((const char*)u8" \u2264 %1").arg(static_cast<int>(option.rangeMax->value)));
       labelMax->setBuddy(widget);
       //
       horizontal->addWidget(labelMin, 2);
@@ -102,7 +102,7 @@ void PageMPSettingsScripted::_renderOptionRow(uint32_t i, QGridLayout* layout, c
          if (value.name) {
             combo->addItem(QString::fromUtf8(value.name->get_content(reach::language::english).c_str()), (int16_t)value.value);
          } else {
-            combo->addItem(QString(value.value), (int16_t)value.value);
+            combo->addItem(QString::number(static_cast<int>(value.value)), (int16_t)value.value);
          }
       }
       combo->setCurrentIndex(option.currentValueIndex);

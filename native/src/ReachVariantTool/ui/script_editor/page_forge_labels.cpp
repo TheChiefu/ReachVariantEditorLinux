@@ -172,7 +172,7 @@ void ScriptEditorPageForgeLabels::updateListFromVariant(GameVariant* variant) {
       } else {
          item->setText(tr("<unnamed label %1>").arg(i));
       }
-      item->setData(Qt::ItemDataRole::UserRole, i);
+      item->setData(Qt::ItemDataRole::UserRole, static_cast<int>(i));
       container->addItem(item);
    }
    container->setCurrentRow(sel);

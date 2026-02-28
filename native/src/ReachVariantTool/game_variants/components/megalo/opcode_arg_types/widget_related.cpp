@@ -280,7 +280,11 @@ namespace Megalo {
             case MeterType::number: return 2;
          }
          assert(false && "Bad meter type specified!");
-         __assume(0); // tell MSVC that this is unreachable
+         #if defined(_MSC_VER)
+            __assume(0); // tell MSVC that this is unreachable
+         #else
+            __builtin_unreachable();
+         #endif
       }
    #pragma endregion
 }

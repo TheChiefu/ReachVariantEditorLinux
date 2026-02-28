@@ -16,6 +16,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 #pragma once
 #include <cstdint>
+#include <cstring>
 #include <limits>
 
 namespace cobb {
@@ -37,7 +38,7 @@ namespace cobb {
          //
       public:
          bitset() {
-            memset(&this->data, 0, sizeof(this->data));
+            std::memset(&this->data, 0, sizeof(this->data));
          }
          //
          uint32_t dword(uint8_t i) const noexcept {

@@ -1,4 +1,5 @@
 #include "string.h"
+#include <cstring>
 /*
 
 This file is provided under the Creative Commons 0 License.
@@ -15,8 +16,6 @@ ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
-#pragma once
-
 namespace cobb {
    namespace qt {
       bool string_has_any_of(const QString& text, const QString& charset) {
@@ -37,7 +36,7 @@ namespace cobb {
          int size_set  = strlen(charset);
          for (int i = 0; i < size_text; i++) {
             auto c = text[i];
-            if (c > 255) // character isn't representable in Latin-1 and so cannot appear in a (const char*)-type charset
+            if (c.unicode() > 255) // character isn't representable in Latin-1 and so cannot appear in a (const char*)-type charset
                continue;
             for (int j = 0; j < size_set; j++) {
                auto d = charset[j];

@@ -14,7 +14,7 @@ class QXBLGamertagValidator : public QValidator {
       virtual QValidator::State validate(QString& input, int& pos) const {
          if (lax) {
             for (auto c : input) {
-               if (c > 255)
+               if (c.unicode() > 255)
                   return QValidator::Invalid;
             }
             return QValidator::Acceptable;

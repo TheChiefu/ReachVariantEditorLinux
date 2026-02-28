@@ -1,6 +1,7 @@
 #include "player_traits.h"
 #include <limits>
 #include "../../../errors.h"
+#include "../../../../helpers/debugbreak.h"
 #include "../compiler/compiler.h"
 
 namespace {

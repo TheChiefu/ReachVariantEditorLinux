@@ -57,7 +57,7 @@ namespace rvt::headless {
          return false;
       }
       {
-         QString q_path = QString::fromStdWString(params.megalo_source);
+         QString q_path = QString::fromStdWString(params.megalo_source.wstring());
          QFile   file(q_path);
          if (!file.open(QIODevice::ReadOnly)) {
             std::println(stderr, "Failed to open the Megalo source file: {}", file.errorString().toStdString());
@@ -79,16 +79,16 @@ namespace rvt::headless {
       compiler.parse(code);
 
       for (auto& item : compiler.get_fatal_errors()) {
-         std::println("[FATAL] Line {} Col {}: {}", item.pos.line, item.pos.col(), item.text.toStdString());
+         std::println("[FATAL] Line {} Col {}: {}", item.location.line, item.location.col(), item.text.toStdString());
       }
       for (auto& item : compiler.get_non_fatal_errors()) {
-         std::println("[ERROR] Line {} Col {}: {}", item.pos.line, item.pos.col(), item.text.toStdString());
+         std::println("[ERROR] Line {} Col {}: {}", item.location.line, item.location.col(), item.text.toStdString());
       }
       for (auto& item : compiler.get_warnings()) {
-         std::println("[WARN:] Line {} Col {}: {}", item.pos.line, item.pos.col(), item.text.toStdString());
+         std::println("[WARN:] Line {} Col {}: {}", item.location.line, item.location.col(), item.text.toStdString());
       }
       for (auto& item : compiler.get_notices()) {
-         std::println("[NOTE:] Line {} Col {}: {}", item.pos.line, item.pos.col(), item.text.toStdString());
+         std::println("[NOTE:] Line {} Col {}: {}", item.location.line, item.location.col(), item.text.toStdString());
       }
 
       if (compiler.has_errors()) {

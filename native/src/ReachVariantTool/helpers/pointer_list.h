@@ -15,6 +15,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 #pragma once
+#include <utility>
 #include <vector>
 
 namespace cobb {
@@ -35,7 +36,7 @@ namespace cobb {
          //
          pointer_list() {}
          pointer_list(const pointer_list& o) {  this->operator=(o); }
-         pointer_list(pointer_list&& o) { this->operator=(o); }
+         pointer_list(pointer_list&& o) { this->operator=(std::move(o)); }
          pointer_list(bool isOwner) : _owner(isOwner) {}
          ~pointer_list() {
             if (this->is_owner())
@@ -64,12 +65,12 @@ namespace cobb {
          }
          //
          pointer_list& operator=(const pointer_list& other) noexcept {
-            std::vector::operator=(other); // call super
+            std::vector<T*>::operator=(other); // call super
             // DON'T copy ownership state
             return *this;
          }
          pointer_list& operator=(pointer_list&& other) noexcept {
-            std::vector::swap(other);
+            std::vector<T*>::swap(other);
             this->_owner = other._owner;
             return *this;
          }

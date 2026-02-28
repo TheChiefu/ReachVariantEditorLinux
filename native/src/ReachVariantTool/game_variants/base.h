@@ -9,7 +9,6 @@
 #include "../helpers/bitnumber.h"
 #include "../helpers/bitwriter.h"
 #include "../helpers/bytewriter.h"
-#include "../helpers/files.h"
 #include "../helpers/stream.h"
 #include "editor_file_block.h"
 

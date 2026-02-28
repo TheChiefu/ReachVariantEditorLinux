@@ -37,7 +37,7 @@ namespace ReachINI {
       REACHTOOL_MAKE_INI_SETTING(bInlineIfs, "Compiler", true);
    }
    namespace DefaultLoadPath {
-      REACHTOOL_MAKE_INI_SETTING(uPathType,   "DefaultLoadPath", (uint32_t)DefaultPathType::mcc_matchmaking_content);
+      REACHTOOL_MAKE_INI_SETTING(uPathType,   "DefaultLoadPath", (uint32_t)DefaultPathType::current_working_directory);
       REACHTOOL_MAKE_INI_SETTING(sCustomPath, "DefaultLoadPath", "");
    }
    namespace DefaultSavePath {

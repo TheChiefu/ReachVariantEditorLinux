@@ -73,23 +73,8 @@ MegaloScriptEditorWindow::MegaloScriptEditorWindow(QWidget* parent) : QDialog(pa
       menubar->addAction(root->menuAction());
    }
    {
-      auto* root = new QMenu(tr("Help"), menubar);
-      {
-         auto* action = this->menu_actions.help.web = new QAction(tr("View Help (in browser)"), root);
-         QObject::connect(action, &QAction::triggered, this, [this]() { ReachEditorState::get().openHelp(this, false); });
-      }
-      {
-         auto* action = this->menu_actions.help.folder = new QAction(tr("View Help (in folder)"), root);
-         QObject::connect(action, &QAction::triggered, this, [this]() { ReachEditorState::get().openHelp(this, true); });
-      }
-      root->addAction(this->menu_actions.help.web);
-      root->addAction(this->menu_actions.help.folder);
-      menubar->addAction(root->menuAction());
-   }
-   {
       this->menu_actions.save->setShortcut(QKeySequence::Save);
       this->menu_actions.saveAs->setShortcut(QKeySequence::SaveAs);
-      this->menu_actions.help.folder->setShortcut(QKeySequence::HelpContents);
    }
    //
    auto& editor = ReachEditorState::get();

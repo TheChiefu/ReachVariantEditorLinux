@@ -22,7 +22,7 @@ ScriptEditorPageReqObjTypes::ScriptEditorPageReqObjTypes(QWidget* parent) : QWid
          name = QString::fromLatin1(definition.name.c_str());
       auto item = new QListWidgetItem(name, widget);
       item->setToolTip(definition.get_description());
-      item->setData(Qt::ItemDataRole::UserRole, i);
+      item->setData(Qt::ItemDataRole::UserRole, static_cast<int>(i));
       item->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsUserCheckable);
    }
    if (auto m = widget->model())

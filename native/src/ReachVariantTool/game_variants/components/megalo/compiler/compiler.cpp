@@ -77,7 +77,11 @@ namespace {
          }
       }
       assert(false && "Where is the assignment opcode?");
-      __assume(0); // tell MSVC this is unreachable
+      #if defined(_MSC_VER)
+         __assume(0); // tell MSVC this is unreachable
+      #else
+         __builtin_unreachable();
+      #endif
    }
    const Megalo::ConditionFunction& _get_comparison_opcode() {
       using namespace Megalo;
@@ -93,7 +97,11 @@ namespace {
          }
       }
       assert(false && "Where is the comparison opcode?");
-      __assume(0); // tell MSVC this is unreachable
+      #if defined(_MSC_VER)
+         __assume(0); // tell MSVC this is unreachable
+      #else
+         __builtin_unreachable();
+      #endif
    }
    //
    Megalo::block_type _block_type_to_trigger_type(Megalo::Script::Block::Type type) {
@@ -2575,7 +2583,7 @@ namespace Megalo {
          this->raise_error("Not enough arguments passed to the function.");
    }
    namespace {
-      template<typename T, int I> void _find_opcode_bases(const std::array<T, I>& list, std::vector<const OpcodeBase*>& results, QString function_name, Script::VariableReference* context) {
+      template<typename T, size_t I> void _find_opcode_bases(const std::array<T, I>& list, std::vector<const OpcodeBase*>& results, QString function_name, Script::VariableReference* context) {
          for (auto& action : list) {
             auto& mapping = action.mapping;
             if (context) {
@@ -2589,7 +2597,7 @@ namespace Megalo {
                results.push_back(&action);
          }
       }
-      template<typename T, int I> void _find_game_ns_opcode_bases(const std::array<T, I>& list, std::vector<const OpcodeBase*>& results, QString function_name) {
+      template<typename T, size_t I> void _find_game_ns_opcode_bases(const std::array<T, I>& list, std::vector<const OpcodeBase*>& results, QString function_name) {
          for (auto& action : list) {
             auto& mapping = action.mapping;
             if (mapping.arg_context != OpcodeFuncToScriptMapping::game_namespace)

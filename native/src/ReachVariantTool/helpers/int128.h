@@ -17,16 +17,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #pragma once
 #include <cstdint>
 #include <string>
-#include <intrin.h>
 #include <type_traits>
 
-namespace cobb {
-   #ifdef __SIZEOF_INT128__
-      using uint128_t = __int128;
-   #else
-      #ifndef _M_X64
-         #error This implementation of 128-bit integers is only compatible with x64.
-      #endif
+#if defined(_MSC_VER) && !defined(__SIZEOF_INT128__)
+   #include <intrin.h>
+#endif
+
+   namespace cobb {
+      #ifdef __SIZEOF_INT128__
+         using uint128_t = __int128;
+      #else
+         #if !defined(_MSC_VER) || !defined(_M_X64)
+            #error This fallback implementation of 128-bit integers requires MSVC x64 intrinsics.
+         #endif
       class uint128_t {
          //
          // 128-bit integer type using intrinsics available in MSVC.

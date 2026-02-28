@@ -7,7 +7,7 @@
 #include "../../helpers/refcounting.h"
 #include "../../helpers/pointer_list.h"
 #include "../../helpers/stream.h"
-#include "megalo/limits.h"
+#include "megalo/megalo_limits.h"
 
 //
 // NOTES:

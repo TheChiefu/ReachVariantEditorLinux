@@ -231,6 +231,10 @@ namespace Megalo {
          case ShapeType::box:      return 4;
       }
       assert(false && "Bad shape type specified!");
-      __assume(0); // tell MSVC that this is unreachable
+      #if defined(_MSC_VER)
+         __assume(0); // tell MSVC that this is unreachable
+      #else
+         __builtin_unreachable();
+      #endif
    }
 }

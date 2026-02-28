@@ -186,10 +186,10 @@ namespace Megalo {
       public:
          struct LogEntry {
             QString text;
-            pos     pos;
+            pos     location;
             //
             LogEntry() {}
-            LogEntry(const QString& t, cobb::string_scanner::pos p) : text(t), pos(p) {}
+            LogEntry(const QString& t, cobb::string_scanner::pos p) : text(t), location(p) {}
          };
          using log_t = std::vector<LogEntry>;
          struct log_checkpoint {

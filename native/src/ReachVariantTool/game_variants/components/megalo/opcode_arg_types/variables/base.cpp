@@ -96,7 +96,11 @@ namespace Megalo {
          assert(false && "We've reached unreachable code!");
          return 0;
       #else
-         __assume(0); // suppress "not all paths return a value" by telling MSVC this is unreachable
+         #if defined(_MSC_VER)
+            __assume(0); // suppress "not all paths return a value" by telling MSVC this is unreachable
+         #else
+            __builtin_unreachable();
+         #endif
       #endif
    }
    #pragma endregion

@@ -1,14 +1,10 @@
 #include "editor_state.h"
+#include <climits>
 #include <QApplication>
-#include <QDesktopServices>
-#include <QDir>
 #include <QFileDialog>
-#include <QFontDatabase>
 #include <QMessageBox>
-#include <QProcess>
 #include <QSaveFile>
 #include <QTimer>
-#include "helpers/steam.h"
 #include "game_variants/base.h"
 #include "game_variants/io_process.h"
 #include "game_variants/components/loadouts.h"
@@ -20,15 +16,7 @@
 
 #include "editor_state/ReachStringCentralModel.h"
 
-namespace {
-   inline bool _get_mcc_directory(std::wstring& out) {
-      return cobb::steam::get_game_directory(976730, out);
-   }
-}
-
 ReachEditorState::ReachEditorState() {
-
-   bool is_headless = qobject_cast<QGuiApplication*>(QApplication::instance()) == nullptr;
 
    QObject::connect(this, &ReachEditorState::stringModified, [this](uint32_t index) {
       auto mp = this->multiplayerData();
@@ -44,47 +32,6 @@ ReachEditorState::ReachEditorState() {
          if (traits.uses_string(str))
             this->scriptTraitsModified(&traits);
    });
-   {
-      std::wstring dir;
-      if (_get_mcc_directory(dir)) {
-         this->dirBuiltInVariants      = QString::fromWCharArray(dir.c_str());
-         this->dirMatchmakingVariants  = this->dirBuiltInVariants;
-         this->dirBuiltInVariants     += "/haloreach/game_variants/";
-         this->dirMatchmakingVariants += "/haloreach/hopper_game_variants/";
-         //
-         this->dirBuiltInVariants     = QDir::cleanPath(this->dirBuiltInVariants);
-         this->dirMatchmakingVariants = QDir::cleanPath(this->dirMatchmakingVariants);
-         //
-         auto env = QProcessEnvironment::systemEnvironment();
-         auto dir = QDir(env.value("USERPROFILE"));
-         dir.cd("AppData/LocalLow/MCC/LocalFiles/");
-         if (dir.exists()) {
-            this->dirSavedVariants = dir.absolutePath();
-         }
-      }
-   }
-   if (!is_headless) {
-      std::wstring dir;
-      if (cobb::steam::get_game_directory(1695793, dir)) {
-         QString hrek = QString::fromWCharArray(dir.c_str());
-         if (!hrek.isEmpty()) {
-            hrek += "/data/ui/fonts/";
-
-            auto id = QFontDatabase::addApplicationFont(hrek + "EurostileLTPro-Demi.otf");
-            if (id > 0) {
-               auto families = QFontDatabase::applicationFontFamilies(id);
-               if (!families.isEmpty())
-                  this->reachUIFontFamilyNames.eurostile = families[0];
-            }
-            id = QFontDatabase::addApplicationFont(hrek + "CHT_TNRGC__+DFYuanBold-B5.ttf");
-            if (id > 0) {
-               auto families = QFontDatabase::applicationFontFamilies(id);
-               if (!families.isEmpty())
-                  this->reachUIFontFamilyNames.tv_nord = families[0];
-            }
-         }
-      }
-   }
 
    // Use a single-shot timer because the constructor for ReachStringCentralModel will 
    // try to access us; that happening while we're still being constructed = bad.
@@ -246,21 +193,6 @@ bool ReachEditorState::saveVariant(QWidget* parent, bool saveAs) {
    return true;
 }
 //
-void ReachEditorState::openHelp(QWidget* parent, bool folder) {
-   if (folder) {
-      auto path = QDir(QApplication::applicationDirPath()).currentPath() + "/help/"; // gotta do weird stuff to normalize the application path ughhhhh
-      if (!QDesktopServices::openUrl(QString("file:///") + path))
-         QMessageBox::critical(parent, "Error", QString("Unable to open the documentation. We apologize for the inconvenience."));
-      return;
-   }
-   //
-   auto path = QDir(QApplication::applicationDirPath()).currentPath() + "/help/index.html"; // gotta do weird stuff to normalize the application path ughhhhh
-   if (!QDesktopServices::openUrl(QString("file:///") + path)) {
-      QMessageBox::critical(parent, "Error", QString("Unable to open the documentation. We apologize for the inconvenience."));
-      return;
-   }
-}
-
 ReachCustomGameOptions* ReachEditorState::customGameOptions() noexcept {
    if (!this->currentVariant)
       return nullptr;
@@ -302,18 +234,10 @@ void ReachEditorState::getDefaultLoadDirectory(QString& out) const noexcept {
       case dir_type::custom:
          out = QString::fromUtf8(ReachINI::DefaultLoadPath::sCustomPath.currentStr.c_str());
          return;
-      case dir_type::mcc_built_in_content:
-         out = this->dirBuiltInVariants;
-         return;
       case dir_type::current_working_directory:
-         out = "";
-         return;
-      case dir_type::mcc_saved_content:
-         out = this->dirSavedVariants;
-         return;
       default:
-      case dir_type::mcc_matchmaking_content:
-         out = this->dirMatchmakingVariants;
+         // Core-only mode: Steam/MCC auto-discovery paths are intentionally unsupported.
+         out = "";
          return;
    }
 }
@@ -324,32 +248,13 @@ void ReachEditorState::getDefaultSaveDirectory(QString& out) const noexcept {
       case dir_type::custom:
          out = QString::fromUtf8(ReachINI::DefaultSavePath::sCustomPath.currentStr.c_str());
          return;
-      case dir_type::mcc_built_in_content:
-         out = this->dirBuiltInVariants;
-         return;
-      case dir_type::mcc_matchmaking_content:
-         out = this->dirMatchmakingVariants;
-         return;
       case dir_type::current_working_directory:
          out = "";
          return;
-      default:
       case dir_type::path_of_open_file:
+      default:
+         // Core-only mode: treat deprecated auto-path enums as "path of open file."
          out = QString::fromWCharArray(ReachEditorState::get().variantFilePath());
-         if (!out.isEmpty()) {
-            if (!ReachINI::DefaultSavePath::bExcludeMCCBuiltInFolders.current.b)
-               return;
-            std::wstring path    = out.toStdWString();
-            std::wstring prefix = this->dirBuiltInVariants.toStdWString();
-            if (!cobb::path_starts_with(path, prefix)) {
-               prefix = this->dirMatchmakingVariants.toStdWString();
-               if (!cobb::path_starts_with(path, prefix))
-                  return;
-            }
-            out.clear();
-         }
-      case dir_type::mcc_saved_content:
-         out = this->dirSavedVariants;
          return;
    }
 }

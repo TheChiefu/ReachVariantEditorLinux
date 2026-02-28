@@ -8,6 +8,7 @@
 
 # Don't upload compiled/linked/etc. files
 *.obj
+build/
 
 # Don't upload the program's generated INI files
 *.ini
