@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <vector>
 #include "../formats/block.h"
+#include "../helpers/fourcc.h"
 #include "../helpers/memory.h"
 
 class RVTEditorBlock : public ReachFileBlock {
@@ -9,8 +10,8 @@ class RVTEditorBlock : public ReachFileBlock {
       RVTEditorBlock();
       ~RVTEditorBlock();
       //
-      static constexpr uint32_t signature_megalo_string_table = 'mstr';
-      static constexpr uint32_t signature_megalo_script       = 'mscr';
+      static constexpr uint32_t signature_megalo_string_table = cobb::fourcc("mstr");
+      static constexpr uint32_t signature_megalo_script       = cobb::fourcc("mscr");
       //
       struct subrecord {
          uint32_t signature = 0;

@@ -217,8 +217,6 @@ ReachVariantTool::ReachVariantTool(QWidget *parent) : QMainWindow(parent) {
    this->ui.actionHelpWeb->setEnabled(true);
    this->ui.actionHelpWeb->setVisible(true);
    this->ui.actionHelpWeb->setShortcut(QKeySequence::HelpContents);
-   this->ui.actionHelpFolder->setEnabled(false);
-   this->ui.actionHelpFolder->setVisible(false);
    this->ui.menuHelp->menuAction()->setVisible(true);
    {
       this->ui.actionOpen->setShortcut(QKeySequence::Open);

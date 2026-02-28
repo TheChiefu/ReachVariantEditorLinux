@@ -9,6 +9,7 @@
 #include "../helpers/bitnumber.h"
 #include "../helpers/bitwriter.h"
 #include "../helpers/bytewriter.h"
+#include "../helpers/fourcc.h"
 #include "../helpers/stream.h"
 #include "editor_file_block.h"
 
@@ -47,7 +48,7 @@ class GameVariantData {
 
 class BlamHeader {
    public:
-      ReachFileBlock header = ReachFileBlock('_blf', 0x30);
+      ReachFileBlock header = ReachFileBlock(cobb::fourcc("_blf"), 0x30);
       struct {
          uint16_t unk0C = 0;
          uint8_t  unk0E[0x20]; // very possibly a string buffer; Matchmaking Firefight variants use the text "game var" here
@@ -59,7 +60,7 @@ class BlamHeader {
 };
 class EOFBlock : public ReachFileBlock {
    public:
-      EOFBlock() : ReachFileBlock('_eof', 0) {}
+      EOFBlock() : ReachFileBlock(cobb::fourcc("_eof"), 0) {}
       uint32_t length = 0;
       uint8_t  unk04  = 0;
       //
@@ -69,7 +70,7 @@ class EOFBlock : public ReachFileBlock {
 
 class ReachBlockATHR { // used to indicate authorship information for internal content
    public:
-      ReachFileBlock header = ReachFileBlock('athr', 0x50);
+      ReachFileBlock header = ReachFileBlock(cobb::fourcc("athr"), 0x50);
       struct {
          uint8_t  unk00[0x10];
          uint32_t buildNumber;
@@ -83,7 +84,7 @@ class ReachBlockATHR { // used to indicate authorship information for internal c
 
 class ReachBlockCHDR {
    public:
-      ReachFileBlock header = ReachFileBlock('chdr', 0x2C0);
+      ReachFileBlock header = ReachFileBlock(cobb::fourcc("chdr"), 0x2C0);
       ReachUGCHeader data;
       //
       bool read(reach_block_stream& stream) noexcept {
@@ -110,7 +111,7 @@ class ReachBlockMPVR {
          };
       };
       //
-      ReachFileBlock header = ReachFileBlock('mpvr', 0x5028);
+      ReachFileBlock header = ReachFileBlock(cobb::fourcc("mpvr"), 0x5028);
       uint8_t  hashSHA1[0x14];
       cobb::bitnumber<4, ReachGameEngine> type;
       GameVariantData* data = nullptr;

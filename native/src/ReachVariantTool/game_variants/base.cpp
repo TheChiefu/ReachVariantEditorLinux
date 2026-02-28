@@ -72,7 +72,7 @@ bool ReachBlockMPVR::read(reach_block_stream& reader) {
    bool     block_type_is_gvar     = false; // are we using a 'gvar' block instead of an 'mpvr' block?
    //
    this->header.read(reader.bytes);
-   if (this->header.found.signature == 'mpvr') {
+   if (this->header.found.signature == cobb::fourcc("mpvr")) {
       if (this->header.found.version == block_header_version::halo_2_annie) {
          //
          // Note: This won't catch all Halo 2 Anniversary variants; some use a new file chunk, "athr", 
@@ -87,9 +87,9 @@ bool ReachBlockMPVR::read(reach_block_stream& reader) {
          error_report.state = GameEngineVariantLoadError::load_state::failure;
          return false;
       }
-   } else if (this->header.found.signature == 'gvar') {
+   } else if (this->header.found.signature == cobb::fourcc("gvar")) {
       block_type_is_gvar = true;
-      this->header.found.signature = 'mpvr'; // fix this for when we save
+      this->header.found.signature = cobb::fourcc("mpvr"); // fix this for when we save
    } else {
       error_report.state = GameEngineVariantLoadError::load_state::failure;
       return false;
@@ -176,7 +176,7 @@ bool ReachBlockMPVR::read_mglo(const void* data, size_t size) {
          error_report.reason = GameEngineVariantLoadError::load_failure_reason::invalid_mpvr_data;
       return false;
    }
-   this->header.found.signature = 'mpvr';
+   this->header.found.signature = cobb::fourcc("mpvr");
    this->header.found.version = 0x36;
    this->header.found.flags = 1;
    {
@@ -300,7 +300,7 @@ bool GameVariant::read(const void* data, size_t size) {
          //
          // _blf must be the first block in the file
          //
-         if (block.header.signature != '_blf') {
+         if (block.header.signature != cobb::fourcc("_blf")) {
             error_report.state = GameEngineVariantLoadError::load_state::failure;
             error_report.failure_point = GameEngineVariantLoadError::load_failure_point::block_blam;
             //
@@ -313,7 +313,7 @@ bool GameVariant::read(const void* data, size_t size) {
          blam = true;
       }
       switch (block.header.signature) {
-         case '_blf':
+         case cobb::fourcc("_blf"):
             if (!this->blamHeader.read(block)) {
                error_report.state         = GameEngineVariantLoadError::load_state::failure;
                error_report.failure_point = GameEngineVariantLoadError::load_failure_point::block_blam;
@@ -326,7 +326,7 @@ bool GameVariant::read(const void* data, size_t size) {
                return false;
             }
             break;
-         case 'athr':
+         case cobb::fourcc("athr"):
             athr = true;
             if (!this->athr.read(block)) {
                warnings.push_back(
@@ -334,7 +334,7 @@ bool GameVariant::read(const void* data, size_t size) {
                );
             }
             break;
-         case 'chdr':
+         case cobb::fourcc("chdr"):
             if (!this->contentHeader.read(block)) {
                error_report.state         = GameEngineVariantLoadError::load_state::failure;
                error_report.failure_point = GameEngineVariantLoadError::load_failure_point::block_chdr;
@@ -350,8 +350,8 @@ bool GameVariant::read(const void* data, size_t size) {
                return false;
             }
             break;
-         case 'mpvr':
-         case 'gvar':
+         case cobb::fourcc("mpvr"):
+         case cobb::fourcc("gvar"):
             if (!this->multiplayer.read(block)) {
                error_report.state = GameEngineVariantLoadError::load_state::failure;
                if (!error_report.has_failure_point())
@@ -360,11 +360,11 @@ bool GameVariant::read(const void* data, size_t size) {
             }
             mpvr = true;
             break;
-         case '_eof':
+         case cobb::fourcc("_eof"):
             this->eofBlock.read(block);
             _eof = true;
             break;
-         case 'xRVT':
+         case cobb::fourcc("xRVT"):
             editor_block.read(block);
             break;
          default:
@@ -462,7 +462,7 @@ void GameVariant::write(GameVariantSaveProcess& save_process) noexcept {
    }
 }
 void GameVariant::synch_chdr_to_mpvr() noexcept {
-   this->contentHeader.header.found.signature = 'chdr';
+   this->contentHeader.header.found.signature = cobb::fourcc("chdr");
    this->contentHeader.header.found.version   = 0x000A;
    this->contentHeader.header.found.flags     = 0x0002;
    //

@@ -15,7 +15,7 @@ namespace {
    }
 }
 namespace Megalo {
-   extern constexpr bool variable_type_can_have_initializer(variable_type v) {
+   bool variable_type_can_have_initializer(variable_type v) {
       switch (v) {
          case variable_type::scalar:
          case variable_type::team:
@@ -24,7 +24,7 @@ namespace Megalo {
       }
       return false;
    }
-   extern constexpr bool variable_type_has_network_priority(variable_type v) {
+   bool variable_type_has_network_priority(variable_type v) {
       switch (v) {
          case variable_type::scalar:
          case variable_type::player:

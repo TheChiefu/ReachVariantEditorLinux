@@ -15,8 +15,8 @@ namespace Megalo {
    };
    using variable_network_priority_t = cobb::bitnumber<2, variable_network_priority>;
 
-   extern constexpr bool variable_type_can_have_initializer(variable_type);
-   extern constexpr bool variable_type_has_network_priority(variable_type);
+   bool variable_type_can_have_initializer(variable_type);
+   bool variable_type_has_network_priority(variable_type);
    
    class VariableDeclaration {
       public:

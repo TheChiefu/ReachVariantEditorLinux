@@ -15,7 +15,7 @@ ProgramOptionsDialog::ProgramOptionsDialog(QWidget* parent) : QDialog(parent) {
    QObject::connect(this->ui.buttonSave,   &QPushButton::clicked, this, &ProgramOptionsDialog::saveAndClose);
    //
    {  // Editing
-      QObject::connect(this->ui.hideFirefightNoOps, &QCheckBox::stateChanged, [](int state) {
+      QObject::connect(this->ui.hideFirefightNoOps, &QCheckBox::checkStateChanged, [](Qt::CheckState state) {
          ReachINI::Editing::bHideFirefightNoOps.pending.b = state == Qt::CheckState::Checked;
       });
    }
@@ -48,7 +48,7 @@ ProgramOptionsDialog::ProgramOptionsDialog(QWidget* parent) : QDialog(parent) {
       QObject::connect(this->ui.defaultSavePathCustom, &QLineEdit::textEdited, this, [](const QString& text) {
          ReachINI::DefaultSavePath::sCustomPath.pendingStr = (const char*)text.toUtf8();
       });
-      QObject::connect(this->ui.defaultSavePathExcludeMCCNative, &QCheckBox::stateChanged, [](int state) {
+      QObject::connect(this->ui.defaultSavePathExcludeMCCNative, &QCheckBox::checkStateChanged, [](Qt::CheckState state) {
          ReachINI::DefaultSavePath::bExcludeMCCBuiltInFolders.pending.b = state == Qt::CheckState::Checked;
       });
    }
@@ -61,10 +61,10 @@ ProgramOptionsDialog::ProgramOptionsDialog(QWidget* parent) : QDialog(parent) {
    this->ui.defaultSavePathAutoMCCSaved->setVisible(false);
    this->ui.defaultSavePathExcludeMCCNative->setVisible(false);
 
-   QObject::connect(this->ui.optionFullFilePathsInWindowTitle, &QCheckBox::stateChanged, [](int state) {
+   QObject::connect(this->ui.optionFullFilePathsInWindowTitle, &QCheckBox::checkStateChanged, [](Qt::CheckState state) {
       ReachINI::UIWindowTitle::bShowFullPath.pending.b = state == Qt::CheckState::Checked;
    });
-   QObject::connect(this->ui.optionVariantNameInWindowTitle, &QCheckBox::stateChanged, [](int state) {
+   QObject::connect(this->ui.optionVariantNameInWindowTitle, &QCheckBox::checkStateChanged, [](Qt::CheckState state) {
       ReachINI::UIWindowTitle::bShowVariantTitle.pending.b = state == Qt::CheckState::Checked;
    });
    QObject::connect(this->ui.optionTheme, &QLineEdit::textEdited, this, [](const QString& text) {
@@ -217,7 +217,7 @@ ProgramOptionsDialog::ProgramOptionsDialog(QWidget* parent) : QDialog(parent) {
       }
       #pragma endregion
       #pragma region Compiler
-      QObject::connect(this->ui.compilerEnableInlineIfs, &QCheckBox::stateChanged, [](int state) {
+      QObject::connect(this->ui.compilerEnableInlineIfs, &QCheckBox::checkStateChanged, [](Qt::CheckState state) {
          ReachINI::Compiler::bInlineIfs.pending.b = state == Qt::CheckState::Checked;
       });
       #pragma endregion
@@ -229,14 +229,14 @@ QVector<cobb::ini::setting*> ProgramOptionsDialog::currentSyntaxHighlightOptions
    //
    auto& ini  = ReachINI::get();
    auto  data = this->ui.synHighType->currentData();
-   if (data.type() == QMetaType::QStringList) {
+   if (data.typeId() == QMetaType::QStringList) {
       auto list = data.value<QStringList>();
       for (auto& name : list) {
          auto* s = ini.get_setting("CodeEditor", name.toStdString().c_str());
          if (s)
             out.push_back(s);
       }
-   } else if (data.type() == QMetaType::QString) {
+   } else if (data.typeId() == QMetaType::QString) {
       auto* s = ini.get_setting("CodeEditor", data.value<QString>().toStdString().c_str());
       if (s)
          out.push_back(s);

@@ -15,12 +15,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 #include "endianness.h"
+#include "fourcc.h"
 
 #ifndef __cpp_lib_endian
 namespace {
    const cobb::endian_t _check() noexcept {
       union {
-         uint32_t dword = 'ABCD';
+         uint32_t dword = cobb::fourcc("ABCD");
          uint8_t  chars[4];
       } sentinel;
       return sentinel.chars[0] == 'A' ? cobb::endian::big : cobb::endian::little;

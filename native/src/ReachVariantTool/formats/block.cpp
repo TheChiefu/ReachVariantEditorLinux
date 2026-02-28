@@ -2,6 +2,7 @@
 #include "../helpers/bytewriter.h"
 #include "../helpers/debugbreak.h"
 #include "../helpers/endianness.h"
+#include "../helpers/fourcc.h"
 extern "C" {
    #include "../../zlib/zlib.h" // interproject ref
 }
@@ -150,7 +151,7 @@ reach_block_stream ReachFileBlockReader::next() noexcept {
       return reach_block_stream(reach_block_stream::bad_block);
    }
    uint32_t pos_block_end = pos_block_start + header.size;
-   if (header.signature == '_cmp') {
+   if (header.signature == cobb::fourcc("_cmp")) {
       uint8_t  decompressed_unk00 = 0;
       uint32_t decompressed_size  = 0;
       bytes.read(decompressed_unk00);

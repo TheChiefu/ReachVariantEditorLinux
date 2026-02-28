@@ -1,7 +1,7 @@
 #include "editor_file_block.h"
 #include "../helpers/debugbreak.h"
 
-RVTEditorBlock::RVTEditorBlock() : ReachFileBlock('xRVT', ReachFileBlock::any_size) {
+RVTEditorBlock::RVTEditorBlock() : ReachFileBlock(cobb::fourcc("xRVT"), ReachFileBlock::any_size) {
    this->found = this->expected; // TODO: we do this so the block writes properly if it wasn't already present in the file, but this is ugly; make it better
    this->found.size = 0;
 }

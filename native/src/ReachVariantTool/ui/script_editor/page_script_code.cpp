@@ -416,16 +416,6 @@ ScriptEditorPageScriptCode::ScriptEditorPageScriptCode(QWidget* parent) : QWidge
    ui.setupUi(this);
    this->ui.splitter->setStretchFactor(0, 7);
    this->ui.splitter->setStretchFactor(1, 3);
-   this->ui.referencePanel->hide();
-   this->ui.referenceSplitter->setHandleWidth(0);
-   {
-      auto sizes = this->ui.referenceSplitter->sizes();
-      if (sizes.size() >= 2) {
-         sizes[0] += sizes[1];
-         sizes[1] = 0;
-         this->ui.referenceSplitter->setSizes(sizes);
-      }
-   }
    {
       auto sizes = this->ui.splitter->sizes();
       if (sizes.size() >= 2 && sizes[1] > 0)
