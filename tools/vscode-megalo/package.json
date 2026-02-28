@@ -1,0 +1,54 @@
+{
+  "name": "reachvarianttool-megalo-language",
+  "displayName": "ReachVariantTool Megalo Language",
+  "description": "Language support for ReachVariantTool Megalo (.megalo) scripts.",
+  "version": "0.0.1",
+  "publisher": "reachvarianttool",
+  "license": "GPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TheChiefu/ReachVariantEditorLinux.git",
+    "directory": "tools/vscode-megalo"
+  },
+  "homepage": "https://github.com/TheChiefu/ReachVariantEditorLinux#readme",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "megalo",
+    "halo",
+    "reach",
+    "reachvarianttool"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "megalo",
+        "aliases": [
+          "Megalo",
+          "megalo"
+        ],
+        "extensions": [
+          ".megalo"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "megalo",
+        "scopeName": "source.megalo",
+        "path": "./syntaxes/megalo.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "megalo",
+        "path": "./snippets/megalo.code-snippets"
+      }
+    ]
+  }
+}

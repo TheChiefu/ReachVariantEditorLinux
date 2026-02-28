@@ -1,0 +1,64 @@
+{
+  "comments": {
+    "lineComment": "--"
+  },
+  "brackets": [
+    [
+      "(",
+      ")"
+    ],
+    [
+      "[",
+      "]"
+    ]
+  ],
+  "autoClosingPairs": [
+    {
+      "open": "(",
+      "close": ")"
+    },
+    {
+      "open": "[",
+      "close": "]"
+    },
+    {
+      "open": "\"",
+      "close": "\"",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    },
+    {
+      "open": "'",
+      "close": "'",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    }
+  ],
+  "surroundingPairs": [
+    [
+      "(",
+      ")"
+    ],
+    [
+      "[",
+      "]"
+    ],
+    [
+      "\"",
+      "\""
+    ],
+    [
+      "'",
+      "'"
+    ]
+  ],
+  "indentationRules": {
+    "increaseIndentPattern": "^\\s*(?:on\\s+(?:init|local(?:\\s+init)?|pregame|host\\s+migration|double\\s+host\\s+migration|object\\s+death)\\s*:\\s*)?(?:if\\b.*\\bthen\\b|for\\s+each\\b.*\\bdo\\b|do\\b|function\\b|enum\\b)\\s*(?:--.*)?$",
+    "decreaseIndentPattern": "^\\s*(?:end|alt|altif)\\b.*$"
+  },
+  "wordPattern": "(-?\\d*\\.\\d\\w*)|([^\\s\\`\\~\\!\\@\\#\\%\\^\\&\\*\\(\\)\\=\\+\\[\\{\\]\\}\\|\\;\\:\\'\\\"\\,\\.\\<\\>\\/\\?]+)"
+}

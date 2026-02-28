@@ -1,0 +1,101 @@
+{
+  "On Init Block": {
+    "prefix": "oninit",
+    "description": "Create an on init event block.",
+    "body": [
+      "on init: do",
+      "\t$0",
+      "end"
+    ]
+  },
+  "On Event Block": {
+    "prefix": "onevent",
+    "description": "Create an event block.",
+    "body": [
+      "on ${1|init,local init,local,pregame,host migration,double host migration,object death|}: do",
+      "\t$0",
+      "end"
+    ]
+  },
+  "If Block": {
+    "prefix": "ifthen",
+    "description": "Create an if block.",
+    "body": [
+      "if ${1:condition} then",
+      "\t$0",
+      "end"
+    ]
+  },
+  "If Altif Alt Block": {
+    "prefix": "ifalt",
+    "description": "Create an if/altif/alt block chain.",
+    "body": [
+      "if ${1:condition} then",
+      "\t${2}",
+      "altif ${3:other_condition} then",
+      "\t${4}",
+      "alt",
+      "\t$0",
+      "end"
+    ]
+  },
+  "For Each Player": {
+    "prefix": "foreachplayer",
+    "description": "Loop over each player.",
+    "body": [
+      "for each player do",
+      "\t$0",
+      "end"
+    ]
+  },
+  "For Each Player Randomly": {
+    "prefix": "foreachplayerrandom",
+    "description": "Loop over each player in random order.",
+    "body": [
+      "for each player randomly do",
+      "\t$0",
+      "end"
+    ]
+  },
+  "For Each Object With Label": {
+    "prefix": "foreachobjectlabel",
+    "description": "Loop over each object with a Forge label.",
+    "body": [
+      "for each object with label ${1:label_name} do",
+      "\t$0",
+      "end"
+    ]
+  },
+  "For Each Team": {
+    "prefix": "foreachteam",
+    "description": "Loop over each team.",
+    "body": [
+      "for each team do",
+      "\t$0",
+      "end"
+    ]
+  },
+  "Declare Variable With Network Priority": {
+    "prefix": "declarevar",
+    "description": "Declare a script variable with network priority.",
+    "body": [
+      "declare ${1:player.value} with network priority ${2|low,high,local|} = ${3:0}"
+    ]
+  },
+  "Alias": {
+    "prefix": "alias",
+    "description": "Create an alias to a variable or constant.",
+    "body": [
+      "alias ${1:name} = ${2:global.number[0]}$0"
+    ]
+  },
+  "Function Block": {
+    "prefix": "function",
+    "description": "Define a Megalo function block.",
+    "body": [
+      "function ${1:name}()",
+      "\t$0",
+      "end"
+    ]
+  }
+}

@@ -1,0 +1,314 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Megalo",
+  "scopeName": "source.megalo",
+  "fileTypes": [
+    "megalo"
+  ],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#booleans"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#enum-values"
+    },
+    {
+      "include": "#namespaces"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#member-calls"
+    },
+    {
+      "include": "#function-calls"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.megalo",
+          "begin": "--\\[(=*)\\[",
+          "end": "\\]\\1\\]"
+        },
+        {
+          "name": "comment.line.double-dash.megalo",
+          "match": "--.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.megalo",
+          "begin": "\"",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.megalo"
+            }
+          },
+          "end": "\"",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.megalo"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.megalo",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.megalo",
+          "begin": "'",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.megalo"
+            }
+          },
+          "end": "'",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.megalo"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.megalo",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.other.long-bracket.megalo",
+          "begin": "\\[(=*)\\[",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.megalo"
+            }
+          },
+          "end": "\\]\\1\\]",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.megalo"
+            }
+          }
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "meta.event.declaration.megalo",
+          "match": "\\b((?i:on))\\b\\s+((?i:init|local\\s+init|local|pregame|host\\s+migration|double\\s+host\\s+migration|object\\s+death))\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.control.megalo"
+            },
+            "2": {
+              "name": "keyword.other.event.megalo"
+            }
+          }
+        },
+        {
+          "name": "meta.loop.player.megalo",
+          "match": "\\b((?i:for))\\b\\s+((?i:each))\\b\\s+((?i:player))\\b(?:\\s+((?i:randomly))\\b)?",
+          "captures": {
+            "1": {
+              "name": "keyword.control.megalo"
+            },
+            "2": {
+              "name": "keyword.other.subkeyword.megalo"
+            },
+            "3": {
+              "name": "keyword.other.subkeyword.megalo"
+            },
+            "4": {
+              "name": "keyword.other.subkeyword.megalo"
+            }
+          }
+        },
+        {
+          "name": "meta.loop.object.megalo",
+          "match": "\\b((?i:for))\\b\\s+((?i:each))\\b\\s+((?i:object))\\b\\s+((?i:with))\\b\\s+((?i:label))\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.control.megalo"
+            },
+            "2": {
+              "name": "keyword.other.subkeyword.megalo"
+            },
+            "3": {
+              "name": "keyword.other.subkeyword.megalo"
+            },
+            "4": {
+              "name": "keyword.other.subkeyword.megalo"
+            },
+            "5": {
+              "name": "keyword.other.subkeyword.megalo"
+            }
+          }
+        },
+        {
+          "name": "meta.loop.team.megalo",
+          "match": "\\b((?i:for))\\b\\s+((?i:each))\\b\\s+((?i:team))\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.control.megalo"
+            },
+            "2": {
+              "name": "keyword.other.subkeyword.megalo"
+            },
+            "3": {
+              "name": "keyword.other.subkeyword.megalo"
+            }
+          }
+        },
+        {
+          "name": "meta.declare.network.megalo",
+          "match": "\\b((?i:declare))\\b([^\\n]*?)\\b((?i:with))\\b\\s+((?i:network))\\b\\s+((?i:priority))\\b\\s+((?i:low|high|local))\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.control.megalo"
+            },
+            "3": {
+              "name": "keyword.other.subkeyword.megalo"
+            },
+            "4": {
+              "name": "keyword.other.subkeyword.megalo"
+            },
+            "5": {
+              "name": "keyword.other.subkeyword.megalo"
+            },
+            "6": {
+              "name": "storage.modifier.megalo"
+            }
+          }
+        },
+        {
+          "name": "keyword.control.megalo",
+          "match": "\\b(?i:alias|alt|altif|and|declare|do|else|elseif|end|enum|for|function|if|inline|not|on|or|then)\\b"
+        }
+      ]
+    },
+    "booleans": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.megalo",
+          "match": "\\b(?i:true|false)\\b"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.megalo",
+          "match": "\\b(?i:all_players|current_object|current_player|current_team|hud_player|hud_player_team|hud_target_object|hud_target_player|hud_target_team|killed_object|killer_object|killer_player|local_player|local_team|neutral_team|no_object|no_player|no_team|no_widget)\\b"
+        }
+      ]
+    },
+    "enum-values": {
+      "patterns": [
+        {
+          "name": "meta.enum.builtin.megalo",
+          "match": "\\b((?i:damage_reporting_modifier|damage_reporting_type|orientation))\\b\\s*\\.\\s*([A-Za-z_][A-Za-z0-9_]*)\\b",
+          "captures": {
+            "1": {
+              "name": "support.type.megalo"
+            },
+            "2": {
+              "name": "constant.other.enum.megalo"
+            }
+          }
+        },
+        {
+          "name": "meta.enum.user.megalo",
+          "match": "\\b((?i:enums))\\b\\s*\\.\\s*(?:[A-Za-z_][A-Za-z0-9_]*\\s*\\.\\s*)*([A-Za-z_][A-Za-z0-9_]*)\\b",
+          "captures": {
+            "1": {
+              "name": "entity.name.namespace.megalo"
+            },
+            "2": {
+              "name": "constant.other.enum.megalo"
+            }
+          }
+        }
+      ]
+    },
+    "namespaces": {
+      "patterns": [
+        {
+          "name": "entity.name.namespace.megalo",
+          "match": "\\b(?i:enums|game|global|temporaries)\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.megalo",
+          "match": "(?:<<=|>>=|==|!=|<=|>=|\\+=|-=|\\*=|/=|%=|~=|\\^=|&=|\\|=|=|<|>)"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.megalo",
+          "match": "(?<![\\w.])-?0[xX][0-9A-Fa-f]+(?:\\.[0-9A-Fa-f]+)?(?:[pP]-?\\d+)?\\b"
+        },
+        {
+          "name": "constant.numeric.decimal.megalo",
+          "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE]-?\\d+)?\\b"
+        }
+      ]
+    },
+    "member-calls": {
+      "patterns": [
+        {
+          "name": "meta.member.call.megalo",
+          "match": "\\b([A-Za-z_][A-Za-z0-9_]*(?:\\[[^\\]\\r\\n]+\\])?(?:\\.[A-Za-z_][A-Za-z0-9_]*(?:\\[[^\\]\\r\\n]+\\])?)*)\\.([A-Za-z_][A-Za-z0-9_]*)(?=\\s*\\()",
+          "captures": {
+            "1": {
+              "name": "variable.other.member.megalo"
+            },
+            "2": {
+              "name": "entity.name.function.member.megalo"
+            }
+          }
+        },
+        {
+          "name": "variable.other.member.megalo",
+          "match": "\\b[A-Za-z_][A-Za-z0-9_]*(?:\\[[^\\]\\r\\n]+\\])?(?:\\.[A-Za-z_][A-Za-z0-9_]*(?:\\[[^\\]\\r\\n]+\\])?)+\\b"
+        }
+      ]
+    },
+    "function-calls": {
+      "patterns": [
+        {
+          "name": "entity.name.function.megalo",
+          "match": "\\b((?:[A-Za-z_][A-Za-z0-9_]*\\.)*[A-Za-z_][A-Za-z0-9_]*)\\b(?=\\s*\\()"
+        }
+      ]
+    }
+  }
+}
