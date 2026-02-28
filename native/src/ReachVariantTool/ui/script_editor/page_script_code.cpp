@@ -43,6 +43,225 @@ namespace {
       &ReachINI::CodeEditor::sTextColor,
       &ReachINI::CodeEditor::sFontFamily,
    };
+
+   const QStringList ce_context_global_types = {
+      QStringLiteral("number"),
+      QStringLiteral("object"),
+      QStringLiteral("player"),
+      QStringLiteral("team"),
+      QStringLiteral("timer"),
+   };
+   const QStringList ce_context_game_members = {
+      QStringLiteral("betrayal_booting"),
+      QStringLiteral("betrayal_penalty"),
+      QStringLiteral("current_round"),
+      QStringLiteral("friendly_fire"),
+      QStringLiteral("grace_period"),
+      QStringLiteral("grenades_on_map"),
+      QStringLiteral("indestructible_vehicles"),
+      QStringLiteral("lives_per_round"),
+      QStringLiteral("loadout_cam_time"),
+      QStringLiteral("perfection_enabled"),
+      QStringLiteral("powerup_duration_red"),
+      QStringLiteral("powerup_duration_blue"),
+      QStringLiteral("powerup_duration_yellow"),
+      QStringLiteral("respawn_growth"),
+      QStringLiteral("respawn_time"),
+      QStringLiteral("respawn_traits_duration"),
+      QStringLiteral("round_limit"),
+      QStringLiteral("round_time_limit"),
+      QStringLiteral("rounds_to_win"),
+      QStringLiteral("score_to_win"),
+      QStringLiteral("proximity_voice"),
+      QStringLiteral("dont_team_restrict_chat"),
+      QStringLiteral("dead_players_can_talk"),
+      QStringLiteral("sudden_death_time"),
+      QStringLiteral("suicide_penalty"),
+      QStringLiteral("symmetry"),
+      QStringLiteral("symmetry_getter"),
+      QStringLiteral("team_lives_per_round"),
+      QStringLiteral("teams_enabled"),
+      QStringLiteral("fireteams_enabled"),
+      QStringLiteral("round_timer"),
+      QStringLiteral("sudden_death_timer"),
+      QStringLiteral("grace_period_timer"),
+   };
+   const QStringList ce_context_enum_types = {
+      QStringLiteral("damage_reporting_modifier"),
+      QStringLiteral("damage_reporting_type"),
+      QStringLiteral("orientation"),
+   };
+   const QStringList ce_context_enum_values_damage_reporting_modifier = {
+      QStringLiteral("none"),
+      QStringLiteral("pummel"),
+      QStringLiteral("assassination"),
+      QStringLiteral("splatter"),
+      QStringLiteral("sticky"),
+      QStringLiteral("headshot"),
+   };
+   const QStringList ce_context_enum_values_orientation = {
+      QStringLiteral("up_is_up"),
+      QStringLiteral("upright"),
+      QStringLiteral("right_is_up"),
+      QStringLiteral("backward_is_up"),
+      QStringLiteral("nose_down"),
+      QStringLiteral("forward_is_up"),
+      QStringLiteral("nose_up"),
+      QStringLiteral("left_is_up"),
+      QStringLiteral("down_is_up"),
+      QStringLiteral("upside_down"),
+   };
+   const QStringList ce_context_enum_values_damage_reporting_type = {
+      QStringLiteral("unknown"),
+      QStringLiteral("guardians"),
+      QStringLiteral("script"),
+      QStringLiteral("ai_suicide"),
+      QStringLiteral("magnum"),
+      QStringLiteral("assault_rifle"),
+      QStringLiteral("dmr"),
+      QStringLiteral("shotgun"),
+      QStringLiteral("sniper_rifle"),
+      QStringLiteral("rocket_launcher"),
+      QStringLiteral("spartan_laser"),
+      QStringLiteral("frag_grenade"),
+      QStringLiteral("grenade_launcher"),
+      QStringLiteral("plasma_pistol"),
+      QStringLiteral("needler"),
+      QStringLiteral("plasma_rifle"),
+      QStringLiteral("needle_rifle"),
+      QStringLiteral("gravity_hammer"),
+      QStringLiteral("energy_sword"),
+      QStringLiteral("plasma_grenade"),
+      QStringLiteral("concussion_rifle"),
+      QStringLiteral("ghost"),
+      QStringLiteral("warthog"),
+      QStringLiteral("scorpion"),
+      QStringLiteral("falcon"),
+      QStringLiteral("fall_damage"),
+      QStringLiteral("collision_damage"),
+      QStringLiteral("melee_generic"),
+      QStringLiteral("explosion_generic"),
+      QStringLiteral("teleporter"),
+      QStringLiteral("armor_lock_crush"),
+      QStringLiteral("target_locator"),
+      QStringLiteral("focus_rifle"),
+      QStringLiteral("fuel_rod_gun"),
+      QStringLiteral("sentinel_beam"),
+   };
+   const QStringList ce_context_player_members = {
+      QStringLiteral("apply_traits"),
+      QStringLiteral("biped"),
+      QStringLiteral("score"),
+      QStringLiteral("team"),
+   };
+   const QStringList ce_context_object_members = {
+      QStringLiteral("set_waypoint_icon"),
+      QStringLiteral("set_waypoint_priority"),
+      QStringLiteral("set_waypoint_visibility"),
+      QStringLiteral("team"),
+   };
+   const QStringList ce_context_team_members = {
+      QStringLiteral("score"),
+   };
+   const QStringList ce_context_widget_members = {
+      QStringLiteral("set_text"),
+      QStringLiteral("set_visibility"),
+   };
+   const QStringList ce_player_like_symbols = {
+      QStringLiteral("all_players"),
+      QStringLiteral("current_player"),
+      QStringLiteral("hud_player"),
+      QStringLiteral("hud_target_player"),
+      QStringLiteral("killer_player"),
+      QStringLiteral("local_player"),
+      QStringLiteral("no_player"),
+      QStringLiteral("player"),
+   };
+   const QStringList ce_object_like_symbols = {
+      QStringLiteral("biped"),
+      QStringLiteral("current_object"),
+      QStringLiteral("hud_target_object"),
+      QStringLiteral("killed_object"),
+      QStringLiteral("killer_object"),
+      QStringLiteral("no_object"),
+      QStringLiteral("object"),
+   };
+   const QStringList ce_team_like_symbols = {
+      QStringLiteral("current_team"),
+      QStringLiteral("hud_player_team"),
+      QStringLiteral("hud_target_team"),
+      QStringLiteral("local_team"),
+      QStringLiteral("neutral_team"),
+      QStringLiteral("no_team"),
+      QStringLiteral("team"),
+   };
+   const QStringList ce_widget_like_symbols = {
+      QStringLiteral("script_widget"),
+   };
+   const QStringList ce_timer_like_symbols = {
+      QStringLiteral("round_timer"),
+      QStringLiteral("sudden_death_timer"),
+      QStringLiteral("grace_period_timer"),
+      QStringLiteral("timer"),
+   };
+
+   bool _is_ident_char(QChar c) {
+      return c.isLetterOrNumber() || c == '_';
+   }
+   bool _contains_case_insensitive(const QStringList& list, const QString& value) {
+      for (const auto& item : list) {
+         if (item.compare(value, Qt::CaseInsensitive) == 0)
+            return true;
+      }
+      return false;
+   }
+   QStringList _extract_expression_segments(const QString& expression) {
+      QStringList out;
+      QString current;
+      int bracket_depth = 0;
+      for (QChar c : expression) {
+         if (c == '[') {
+            ++bracket_depth;
+            continue;
+         }
+         if (c == ']') {
+            if (bracket_depth > 0)
+               --bracket_depth;
+            continue;
+         }
+         if (bracket_depth > 0)
+            continue;
+         if (c == '.') {
+            if (!current.isEmpty()) {
+               out.push_back(current);
+               current.clear();
+            }
+            continue;
+         }
+         if (_is_ident_char(c)) {
+            current += c;
+            continue;
+         }
+         if (!current.isEmpty()) {
+            out.push_back(current);
+            current.clear();
+         }
+      }
+      if (!current.isEmpty())
+         out.push_back(current);
+      return out;
+   }
+   QStringList _filter_prefix(const QStringList& values, const QString& prefix) {
+      if (prefix.isEmpty())
+         return values;
+      QStringList out;
+      out.reserve(values.size());
+      for (const auto& value : values) {
+         if (value.startsWith(prefix, Qt::CaseInsensitive))
+            out.push_back(value);
+      }
+      return out;
+   }
 }
 
 ScriptEditorPageScriptCode::ScriptEditorPageScriptCode(QWidget* parent) : QWidget(parent) {
@@ -380,7 +599,8 @@ QStringList ScriptEditorPageScriptCode::buildMegaloCompletionWords() {
    return words;
 }
 void ScriptEditorPageScriptCode::setupAutocomplete() {
-   this->_completionModel = new QStringListModel(buildMegaloCompletionWords(), this);
+   this->_defaultCompletionWords = buildMegaloCompletionWords();
+   this->_completionModel = new QStringListModel(this->_defaultCompletionWords, this);
    this->_completer = new QCompleter(this->_completionModel, this);
    this->_completer->setCaseSensitivity(Qt::CaseInsensitive);
    this->_completer->setFilterMode(Qt::MatchStartsWith);
@@ -410,14 +630,133 @@ QString ScriptEditorPageScriptCode::completionPrefixUnderCursor() const {
    cursor.select(QTextCursor::WordUnderCursor);
    return cursor.selectedText();
 }
+QString ScriptEditorPageScriptCode::contextExpressionBeforeCursor() const {
+   auto cursor = this->ui.textEditor->textCursor();
+   auto block  = cursor.block();
+   int  pos_in_block = cursor.position() - block.position();
+   if (pos_in_block <= 0)
+      return QString();
+   QString left = block.text().left(pos_in_block);
+   int i = left.size() - 1;
+   while (i >= 0 && left[i].isSpace())
+      --i;
+   while (i >= 0 && _is_ident_char(left[i]))
+      --i;
+   if (i < 0 || left[i] != '.')
+      return QString();
+   int end = i - 1;
+   if (end < 0)
+      return QString();
+   int start = end;
+   int bracket_depth = 0;
+   for (; start >= 0; --start) {
+      QChar c = left[start];
+      if (c == ']') {
+         ++bracket_depth;
+         continue;
+      }
+      if (c == '[') {
+         if (bracket_depth > 0) {
+            --bracket_depth;
+            continue;
+         }
+         break;
+      }
+      if (bracket_depth > 0)
+         continue;
+      if (_is_ident_char(c) || c == '.')
+         continue;
+      break;
+   }
+   ++start;
+   if (start > end)
+      return QString();
+   return left.mid(start, end - start + 1);
+}
+QStringList ScriptEditorPageScriptCode::completionWordsForContextExpression(const QString& expression) const {
+   if (expression.isEmpty())
+      return {};
+   QStringList segments = _extract_expression_segments(expression);
+   if (segments.isEmpty())
+      return {};
+
+   auto enum_values_for_type = [](const QString& type) -> QStringList {
+      if (type.compare(QStringLiteral("damage_reporting_modifier"), Qt::CaseInsensitive) == 0)
+         return ce_context_enum_values_damage_reporting_modifier;
+      if (type.compare(QStringLiteral("damage_reporting_type"), Qt::CaseInsensitive) == 0)
+         return ce_context_enum_values_damage_reporting_type;
+      if (type.compare(QStringLiteral("orientation"), Qt::CaseInsensitive) == 0)
+         return ce_context_enum_values_orientation;
+      return {};
+   };
+
+   const QString& first = segments.first();
+   const QString& last  = segments.last();
+
+   if (first.compare(QStringLiteral("enums"), Qt::CaseInsensitive) == 0) {
+      if (segments.size() == 1)
+         return ce_context_enum_types;
+      return enum_values_for_type(segments[1]);
+   }
+   if (_contains_case_insensitive(ce_context_enum_types, first) && segments.size() == 1)
+      return enum_values_for_type(first);
+
+   if (first.compare(QStringLiteral("global"), Qt::CaseInsensitive) == 0 || first.compare(QStringLiteral("temporaries"), Qt::CaseInsensitive) == 0) {
+      if (segments.size() == 1)
+         return ce_context_global_types;
+      if (last.compare(QStringLiteral("biped"), Qt::CaseInsensitive) == 0)
+         return ce_context_object_members;
+      if (last.compare(QStringLiteral("team"), Qt::CaseInsensitive) == 0)
+         return ce_context_team_members;
+      if (segments[1].compare(QStringLiteral("player"), Qt::CaseInsensitive) == 0)
+         return ce_context_player_members;
+      if (segments[1].compare(QStringLiteral("object"), Qt::CaseInsensitive) == 0)
+         return ce_context_object_members;
+      if (segments[1].compare(QStringLiteral("team"), Qt::CaseInsensitive) == 0)
+         return ce_context_team_members;
+      if (segments[1].compare(QStringLiteral("script_widget"), Qt::CaseInsensitive) == 0)
+         return ce_context_widget_members;
+   }
+   if (first.compare(QStringLiteral("game"), Qt::CaseInsensitive) == 0) {
+      if (segments.size() == 1)
+         return ce_context_game_members;
+      if (_contains_case_insensitive(ce_timer_like_symbols, last))
+         return {};
+   }
+
+   if (_contains_case_insensitive(ce_widget_like_symbols, first) || _contains_case_insensitive(ce_widget_like_symbols, last))
+      return ce_context_widget_members;
+   if (_contains_case_insensitive(ce_player_like_symbols, last))
+      return ce_context_player_members;
+   if (_contains_case_insensitive(ce_object_like_symbols, last))
+      return ce_context_object_members;
+   if (_contains_case_insensitive(ce_team_like_symbols, last))
+      return ce_context_team_members;
+   if (_contains_case_insensitive(ce_timer_like_symbols, last))
+      return {};
+
+   return {};
+}
 void ScriptEditorPageScriptCode::showAutocompletePopup(bool force) {
    if (!this->_completer || !this->ui.textEditor->hasFocus())
       return;
 
    QString prefix = this->completionPrefixUnderCursor();
-   if (!force && prefix.size() < 2) {
+   QString context_expression = this->contextExpressionBeforeCursor();
+   QStringList context_words = this->completionWordsForContextExpression(context_expression);
+   bool has_context_words = !context_words.isEmpty();
+
+   if (!force && !has_context_words && prefix.size() < 2) {
       this->_completer->popup()->hide();
       return;
+   }
+
+   if (has_context_words) {
+      if (this->_completionModel->stringList() != context_words)
+         this->_completionModel->setStringList(context_words);
+   } else {
+      if (this->_completionModel->stringList() != this->_defaultCompletionWords)
+         this->_completionModel->setStringList(this->_defaultCompletionWords);
    }
 
    this->_completer->setCompletionPrefix(prefix);

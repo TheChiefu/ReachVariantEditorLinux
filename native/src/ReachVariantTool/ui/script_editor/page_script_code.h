@@ -29,6 +29,7 @@ class ScriptEditorPageScriptCode : public QWidget {
       bool _isApplyingCompletion = false;
       QCompleter* _completer = nullptr;
       QStringListModel* _completionModel = nullptr;
+      QStringList _defaultCompletionWords;
       //
       void updateLog(Compiler&);
       void redrawLog();
@@ -39,6 +40,8 @@ class ScriptEditorPageScriptCode : public QWidget {
       void setupAutocomplete();
       void showAutocompletePopup(bool force = false);
       QString completionPrefixUnderCursor() const;
+      QString contextExpressionBeforeCursor() const;
+      QStringList completionWordsForContextExpression(const QString&) const;
       void applyCompletion(const QString&);
       static QStringList buildMegaloCompletionWords();
 
