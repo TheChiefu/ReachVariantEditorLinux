@@ -1,5 +1,6 @@
 #include "page_script_code.h"
 #include "find_replace_bar.h"
+#include "reference_popup.h"
 #include <array>
 #include <utility>
 #include "compiler_unresolved_strings.h"
@@ -415,6 +416,16 @@ ScriptEditorPageScriptCode::ScriptEditorPageScriptCode(QWidget* parent) : QWidge
    ui.setupUi(this);
    this->ui.splitter->setStretchFactor(0, 7);
    this->ui.splitter->setStretchFactor(1, 3);
+   this->ui.referencePanel->hide();
+   this->ui.referenceSplitter->setHandleWidth(0);
+   {
+      auto sizes = this->ui.referenceSplitter->sizes();
+      if (sizes.size() >= 2) {
+         sizes[0] += sizes[1];
+         sizes[1] = 0;
+         this->ui.referenceSplitter->setSizes(sizes);
+      }
+   }
    {
       auto sizes = this->ui.splitter->sizes();
       if (sizes.size() >= 2 && sizes[1] > 0)
@@ -511,6 +522,9 @@ ScriptEditorPageScriptCode::ScriptEditorPageScriptCode(QWidget* parent) : QWidge
          this->_compileLogExpandedSize = sizes[1];
       this->updateCompileLogCollapseButton();
    });
+   QObject::connect(this->ui.buttonReferencePopup, &QPushButton::clicked, [this]() {
+      this->showReferencePopup();
+   });
    this->ui.compileLog->setCopyTransformFunctor([](QString& out, QListWidgetItem* item) {
       switch ((_icon_type)item->data(role_icon).toInt()) {
          case _icon_type::success:
@@ -600,6 +614,14 @@ void ScriptEditorPageScriptCode::setCompileLogCollapsed(bool collapsed) {
 }
 void ScriptEditorPageScriptCode::updateCompileLogCollapseButton() {
    this->setCompileLogCollapseButtonState(this->isCompileLogCollapsed());
+}
+void ScriptEditorPageScriptCode::showReferencePopup() {
+   if (!this->_referencePopup) {
+      this->_referencePopup = new ScriptEditorReferencePopup(this);
+   }
+   this->_referencePopup->show();
+   this->_referencePopup->raise();
+   this->_referencePopup->activateWindow();
 }
 void ScriptEditorPageScriptCode::updateLog(Compiler& compiler) {
    this->_lastNotices  = compiler.get_notices();
@@ -1281,12 +1303,12 @@ void ScriptEditorPageScriptCode::showEvent(QShowEvent* event) {
       if (!this->_compileLogInitialized) {
          this->_compileLogInitialized = true;
          this->setCompileLogCollapsed(true);
-         return;
+      } else {
+         auto sizes = this->ui.splitter->sizes();
+         if (sizes.size() >= 2 && sizes[1] > 0)
+            this->_compileLogExpandedSize = sizes[1];
+         this->updateCompileLogCollapseButton();
       }
-      auto sizes = this->ui.splitter->sizes();
-      if (sizes.size() >= 2 && sizes[1] > 0)
-         this->_compileLogExpandedSize = sizes[1];
-      this->updateCompileLogCollapseButton();
    });
 }
 bool ScriptEditorPageScriptCode::eventFilter(QObject* watched, QEvent* event) {

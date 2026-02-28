@@ -27,136 +27,180 @@
     <number>0</number>
    </property>
    <item row="0" column="0">
-   <widget class="QSplitter" name="splitter">
+    <widget class="QSplitter" name="referenceSplitter">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Horizontal</enum>
      </property>
      <property name="childrenCollapsible">
       <bool>true</bool>
      </property>
-     <widget class="CodeEditorWithLineNumbers" name="textEditor">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>2</verstretch>
-       </sizepolicy>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
       </property>
-      <property name="font">
-       <font>
-        <family>Courier New</family>
-        <pointsize>10</pointsize>
-       </font>
+      <property name="childrenCollapsible">
+       <bool>true</bool>
       </property>
-      <property name="tabStopDistance">
-       <double>24.000000000000000</double>
-      </property>
+      <widget class="CodeEditorWithLineNumbers" name="textEditor">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>2</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <family>Courier New</family>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="tabStopDistance">
+        <double>24.000000000000000</double>
+       </property>
+      </widget>
+      <widget class="QWidget" name="compileLogWrapper" native="true">
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="spacing">
+         <number>4</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QWidget" name="compileLogHeader" native="true">
+          <layout class="QHBoxLayout" name="horizontalLayoutHeader">
+           <property name="spacing">
+            <number>2</number>
+           </property>
+           <property name="leftMargin">
+            <number>4</number>
+           </property>
+           <property name="topMargin">
+            <number>4</number>
+           </property>
+           <property name="rightMargin">
+            <number>4</number>
+           </property>
+           <property name="bottomMargin">
+            <number>4</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="compileLogFilterWarn">
+             <property name="text">
+              <string>Warnings</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="compileLogFilterError">
+             <property name="text">
+              <string>Errors</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="buttonCompileLogJump">
+             <property name="text">
+              <string>Jump to Selected</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="buttonCopyCompileLog">
+             <property name="text">
+              <string>Copy All</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QListWidgetEx" name="compileLog">
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="showDropIndicator" stdset="0">
+           <bool>false</bool>
+          </property>
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ContiguousSelection</enum>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
-     <widget class="QWidget" name="compileLogWrapper" native="true">
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <property name="spacing">
+     <widget class="QWidget" name="referencePanel" native="true">
+      <layout class="QVBoxLayout" name="verticalLayoutReference">
+       <property name="leftMargin">
         <number>4</number>
        </property>
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
        <property name="topMargin">
-        <number>0</number>
+        <number>4</number>
        </property>
        <property name="rightMargin">
-        <number>0</number>
+        <number>4</number>
        </property>
        <property name="bottomMargin">
-        <number>0</number>
+        <number>4</number>
        </property>
        <item>
-        <widget class="QWidget" name="compileLogHeader" native="true">
-         <layout class="QHBoxLayout" name="horizontalLayoutHeader">
-          <property name="spacing">
-           <number>2</number>
-          </property>
-          <property name="leftMargin">
-           <number>4</number>
-          </property>
-          <property name="topMargin">
-           <number>4</number>
-          </property>
-          <property name="rightMargin">
-           <number>4</number>
-          </property>
-          <property name="bottomMargin">
-           <number>4</number>
-          </property>
-          <item>
-           <widget class="QPushButton" name="compileLogFilterWarn">
-            <property name="text">
-             <string>Warnings</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="compileLogFilterError">
-            <property name="text">
-             <string>Errors</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="buttonCompileLogJump">
-            <property name="text">
-             <string>Jump to Selected</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="buttonCopyCompileLog">
-            <property name="text">
-             <string>Copy All</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+        <widget class="QLabel" name="referenceLabel">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Megalo Reference</string>
+         </property>
         </widget>
        </item>
        <item>
-        <widget class="QListWidgetEx" name="compileLog">
-         <property name="editTriggers">
-          <set>QAbstractItemView::NoEditTriggers</set>
-         </property>
-         <property name="showDropIndicator" stdset="0">
-          <bool>false</bool>
-         </property>
-         <property name="alternatingRowColors">
-          <bool>true</bool>
-         </property>
-         <property name="selectionMode">
-          <enum>QAbstractItemView::ContiguousSelection</enum>
-         </property>
-         <property name="wordWrap">
+        <widget class="QTextBrowser" name="referenceText">
+         <property name="openExternalLinks">
           <bool>true</bool>
          </property>
         </widget>
@@ -203,6 +247,22 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="buttonReferencePopup">
+        <property name="minimumSize">
+         <size>
+          <width>88</width>
+          <height>0</height>
+         </size>
+        </property>
+       <property name="toolTip">
+         <string>Open the Megalo docs popup</string>
+        </property>
+        <property name="text">
+         <string>Docs</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacerActions">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -235,7 +295,7 @@
   </layout>
  </widget>
  <customwidgets>
- <customwidget>
+  <customwidget>
    <class>QListWidgetEx</class>
    <extends>QListWidget</extends>
    <header>../generic/QListWidgetEx.h</header>
@@ -254,6 +314,7 @@
   <tabstop>buttonCopyCompileLog</tabstop>
   <tabstop>compileLog</tabstop>
   <tabstop>buttonCompileLogCollapse</tabstop>
+  <tabstop>buttonReferencePopup</tabstop>
   <tabstop>buttonDecompile</tabstop>
   <tabstop>buttonCompile</tabstop>
  </tabstops>

@@ -341,9 +341,9 @@
         <number>0</number>
        </property>
        <item row="0" column="0">
-        <widget class="ScriptEditorPageScriptCode" name="pageContentScriptCode" native="true"/>
-       </item>
-      </layout>
+       <widget class="ScriptEditorPageScriptCode" name="pageContentScriptCode" native="true"/>
+      </item>
+     </layout>
      </widget>
     </widget>
    </item>

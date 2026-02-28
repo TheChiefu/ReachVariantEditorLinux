@@ -28,6 +28,7 @@
 
 #include "options_window.h"
 #include "script_editor.h"
+#include "script_editor/reference_popup.h"
 
 namespace {
    ReachVariantTool* _window = nullptr;
@@ -203,6 +204,7 @@ ReachVariantTool::ReachVariantTool(QWidget *parent) : QMainWindow(parent) {
    QObject::connect(this->ui.actionEditScript, &QAction::triggered, [this]() {
       (new MegaloScriptEditorWindow(this))->exec();
    });
+   QObject::connect(this->ui.actionHelpWeb, &QAction::triggered, this, &ReachVariantTool::showDocsPopup);
    this->ui.actionDebugMisc->setEnabled(false);
    this->ui.actionDebugMisc->setVisible(false);
    this->ui.actionDebugbreak->setEnabled(false);
@@ -211,11 +213,13 @@ ReachVariantTool::ReachVariantTool(QWidget *parent) : QMainWindow(parent) {
    this->ui.actionDebugExportTriggersText->setVisible(false);
    this->ui.actionDebugExportStringsText->setEnabled(false);
    this->ui.actionDebugExportStringsText->setVisible(false);
-   this->ui.actionHelpWeb->setEnabled(false);
-   this->ui.actionHelpWeb->setVisible(false);
+   this->ui.actionHelpWeb->setText(tr("Megalo docs..."));
+   this->ui.actionHelpWeb->setEnabled(true);
+   this->ui.actionHelpWeb->setVisible(true);
+   this->ui.actionHelpWeb->setShortcut(QKeySequence::HelpContents);
    this->ui.actionHelpFolder->setEnabled(false);
    this->ui.actionHelpFolder->setVisible(false);
-   this->ui.menuHelp->menuAction()->setVisible(false);
+   this->ui.menuHelp->menuAction()->setVisible(true);
    {
       this->ui.actionOpen->setShortcut(QKeySequence::Open);
       this->ui.actionSave->setShortcut(QKeySequence::Save);
@@ -232,6 +236,14 @@ ReachVariantTool::ReachVariantTool(QWidget *parent) : QMainWindow(parent) {
    this->regenerateNavigation();
    //
    this->setAcceptDrops(true);
+}
+
+void ReachVariantTool::showDocsPopup() {
+   if (!this->docsPopup)
+      this->docsPopup = new ScriptEditorReferencePopup(this);
+   this->docsPopup->show();
+   this->docsPopup->raise();
+   this->docsPopup->activateWindow();
 }
 
 #pragma region File I/O

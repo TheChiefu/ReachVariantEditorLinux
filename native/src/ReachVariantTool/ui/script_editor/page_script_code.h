@@ -1,6 +1,7 @@
 #pragma once
 #include "ui_page_script_code.h"
 #include <QHash>
+#include <QPointer>
 #include <QStringList>
 #include "../../editor_state.h"
 #include "../../game_variants/components/megalo/compiler/compiler.h"
@@ -11,6 +12,7 @@ class QEvent;
 class QShowEvent;
 class QStringListModel;
 class ScriptEditorFindReplaceBar;
+class ScriptEditorReferencePopup;
 
 class ScriptEditorPageScriptCode : public QWidget {
    Q_OBJECT
@@ -44,6 +46,7 @@ class ScriptEditorPageScriptCode : public QWidget {
       void setCompileLogCollapseButtonState(bool);
       void setCompileLogCollapsed(bool);
       void updateCompileLogCollapseButton();
+      void showReferencePopup();
 
       void jumpToLogItem(QListWidgetItem&);
 
@@ -78,4 +81,5 @@ class ScriptEditorPageScriptCode : public QWidget {
       QString _lastReplaceText;
       int _compileLogExpandedSize = 0;
       bool _compileLogInitialized = false;
+      QPointer<ScriptEditorReferencePopup> _referencePopup;
 };

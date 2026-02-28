@@ -2,6 +2,7 @@
 #include <cstdint>
 
 #include <QtWidgets/QMainWindow>
+#include <QPointer>
 #include <QTimer>
 #include "ui_main_window.h"
 
@@ -11,6 +12,7 @@ class ReachLoadoutPalette;
 class ReachMegaloPlayerTraits;
 class ReachPlayerTraits;
 class ReachTeamData;
+class ScriptEditorReferencePopup;
 
 class ReachVariantTool : public QMainWindow {
    Q_OBJECT
@@ -27,6 +29,7 @@ class ReachVariantTool : public QMainWindow {
       void refreshWindowTitle();
       void updateSaveMenuItems();
       void flashTitleOnSave();
+      void showDocsPopup();
       
    private:
       void openFile(); // open-file dialog
@@ -52,4 +55,5 @@ class ReachVariantTool : public QMainWindow {
       //
       QString lastFileDirectory;
       QTimer  flashTitleOnSaveTimer;
+      QPointer<ScriptEditorReferencePopup> docsPopup;
 };
