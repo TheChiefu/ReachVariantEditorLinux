@@ -4,7 +4,7 @@
 #include "../helpers/endianness.h"
 #include "../helpers/fourcc.h"
 extern "C" {
-   #include "../../zlib/zlib.h" // interproject ref
+   #include <zlib.h>
 }
 
 /*static*/ bool ReachFileBlock::signature_is_suspicious(uint32_t signature) noexcept {

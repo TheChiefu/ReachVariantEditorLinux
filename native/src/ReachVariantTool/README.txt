@@ -53,7 +53,7 @@ to provide you with a copy of that source code on request, in the event that the
 website vanishes. The source code is an 800MB ZIP file (qt-everywhere-src-5.15.2.zip) 
 and is as of this writing available here: <http://download.qt.io/archive/qt/5.15/5.15.2/>
 
-zlib is used under the terms of the license in the zlib.h source file.
+zlib is used under the terms of the zlib license (<https://zlib.net/zlib_license.html>).
 
 All associated licenses are included in text within the "LICENSES" folder.
 

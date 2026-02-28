@@ -10,6 +10,7 @@ Prerequisites:
 - CMake 3.21+
 - A C++23 compiler (GCC or Clang)
 - Qt 6 development packages with `Core`, `Gui`, and `Widgets`
+- zlib development package (`zlib1g-dev` on Debian/Ubuntu, `zlib-devel` on Fedora, `zlib` on Arch)
 
 Build commands:
 
@@ -38,7 +39,7 @@ For detailed contribution guidelines, see `HOW TO CONTRIBUTE.md`.
 
 ## License
 
-Qt and its components are used under the terms of LGPLv3. Zlib has its own license terms, listed in `native/src/zlib/zlib.h`. Some game assets are used per Microsoft's Game Content Usage Rules (see `native/src/ReachVariantTool/README.txt` for further attribution).
+Qt and its components are used under the terms of LGPLv3. zlib is used under the zlib license (<https://zlib.net/zlib_license.html>). Some game assets are used per Microsoft's Game Content Usage Rules (see `native/src/ReachVariantTool/README.txt` for further attribution).
 
 Prior to September 2021, ReachVariantTool was licensed under [Creative Commons CC-BY-NC 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) unless otherwise stated (some files were licensed under CC0).
 

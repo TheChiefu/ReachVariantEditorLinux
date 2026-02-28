@@ -3,6 +3,7 @@ In order to contribute to this Linux fork of ReachVariantTool, you'll need to se
 * CMake 3.21 or newer
 * A C++23 compiler (GCC or Clang)
 * Qt 6 development packages with Core, Gui, and Widgets modules
+* zlib development package (`zlib1g-dev` on Debian/Ubuntu, `zlib-devel` on Fedora, `zlib` on Arch)
 
 Build locally with:
 

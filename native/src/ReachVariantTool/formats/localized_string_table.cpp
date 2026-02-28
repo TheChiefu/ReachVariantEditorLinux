@@ -1,6 +1,6 @@
 #include "localized_string_table.h"
 extern "C" {
-   #include "../../zlib/zlib.h" // interproject ref
+   #include <zlib.h>
 }
 #include "../game_variants/errors.h"
 #include "../game_variants/warnings.h"
