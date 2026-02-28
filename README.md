@@ -33,6 +33,13 @@ Settings file:
 - Format: JSON (`ReachVariantTool.json`)
 - Older `.ini` settings files are migrated automatically on first run when found
 
+## CI Builds (GitHub)
+
+This repository includes a workflow at `.github/workflows/linux-build.yml`.
+
+- Every push/PR can produce a downloadable Linux artifact from the Actions tab.
+- Every pushed tag also uploads the build archive (`.tar.gz`) and checksum (`.sha256`) to a GitHub Release.
+
 ## Contributing
 
 For detailed contribution guidelines, see `HOW TO CONTRIBUTE.md`.
