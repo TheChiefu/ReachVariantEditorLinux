@@ -11,7 +11,6 @@
    #include <QDebug>
    #include <QDirIterator>
 #endif
-#include <QDir>
 #include <QIcon>
 #include <QStandardPaths>
 
@@ -25,45 +24,44 @@
    #include <windows.h>
 #endif
 
-static void load_inis() {
-   auto legacy_path_str = QApplication::instance()->applicationDirPath();;
-   auto modern_path_str = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::AppLocalDataLocation);
-   if (modern_path_str.isEmpty()) {
-      modern_path_str = legacy_path_str;
-   } else {
-      QDir{}.mkpath(modern_path_str);
-   }
+static bool migrate_settings_to_json(cobb::ini::file& ini, const std::filesystem::path& source, const std::filesystem::path& target) {
+   std::error_code ec;
+   if (!std::filesystem::exists(source, ec) || ec)
+      return false;
+   ini.set_paths(source);
+   ini.load();
+   ini.set_paths(target);
+   ini.save();
+   return true;
+}
 
-   auto legacy_path = std::filesystem::path(legacy_path_str.toStdWString()) / L"ReachVariantTool.ini";
-   auto modern_path = std::filesystem::path(modern_path_str.toStdWString()) / L"ReachVariantTool.ini";
+static void load_inis() {
+   auto app_dir_path = std::filesystem::path(QCoreApplication::instance()->applicationDirPath().toStdString());
+   auto app_json     = app_dir_path / "ReachVariantTool.json";
+   auto app_ini      = app_dir_path / "ReachVariantTool.ini";
 
    auto& ini = ReachINI::get();
-   ini.set_paths(modern_path);
+   ini.set_paths(app_json);
 
-   if (!std::filesystem::exists(modern_path) && std::filesystem::exists(legacy_path)) {
-      //
-      // This is, technically, vulnerable to a race condition: files can be created or 
-      // deleted between us running the checks, and us trying to load. For a quick and 
-      // dirty INI update procedure, though, I don't consider that a serious risk.
-      //
-      ini.set_paths(legacy_path);
+   std::error_code ec;
+   if (std::filesystem::exists(app_json, ec)) {
       ini.load();
-      //
-      // Force an immediate save, so that the file gets moved.
-      //
-      ini.set_paths(modern_path);
-      ini.save();
-      //
-      // Try and delete the old file. Doesn't matter too much if we can't.
-      //
-      std::error_code ec;
-      if (std::filesystem::exists(modern_path, ec)) {
-         ec.clear();
-         std::filesystem::remove(legacy_path, ec);
-      }
-   } else {
-      ini.load();
+      return;
    }
+
+   if (migrate_settings_to_json(ini, app_ini, app_json))
+      return;
+
+   auto modern_path_str = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::AppLocalDataLocation);
+   if (!modern_path_str.isEmpty()) {
+      auto modern_path = std::filesystem::path(modern_path_str.toStdString());
+      if (migrate_settings_to_json(ini, modern_path / "ReachVariantTool.json", app_json))
+         return;
+      if (migrate_settings_to_json(ini, modern_path / "ReachVariantTool.ini", app_json))
+         return;
+   }
+
+   ini.load(); // generate defaults in app folder if no existing settings were found
 }
 
 int main(int argc, char *argv[]) {
@@ -142,7 +140,7 @@ int main(int argc, char *argv[]) {
       }
    #endif
 
-   // Load INIs. Has to be done after QApplication instantiation so we can get the 
+   // Load settings. Has to be done after QApplication instantiation so we can get the 
    // program folder path.
    load_inis();
    

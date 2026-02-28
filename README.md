@@ -27,6 +27,11 @@ Install (optional, includes desktop entry + launcher icon on Linux):
 cmake --install build --prefix ~/.local
 ```
 
+Settings file:
+- Default location: same folder as the executable
+- Format: JSON (`ReachVariantTool.json`)
+- Older `.ini` settings files are migrated automatically on first run when found
+
 ## Contributing
 
 For detailed contribution guidelines, see `HOW TO CONTRIBUTE.md`.

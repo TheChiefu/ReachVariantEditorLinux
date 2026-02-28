@@ -17,8 +17,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "./file.h"
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <cstdio>
 #include <fstream>
+#include <limits>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonParseError>
+#include <QJsonValue>
+#include <QString>
 #include "../strings.h"
 
 #include "./setting.h"
@@ -41,6 +49,129 @@ namespace {
             return int(aa) - int(bb);
       }
       return int((unsigned char)*a) - int((unsigned char)*b);
+   }
+
+   bool _path_is_json(const std::filesystem::path& path) {
+      auto ext = path.extension().string();
+      std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) {
+         return (char)std::tolower(c);
+      });
+      return ext == ".json";
+   }
+
+   bool _json_value_to_bool(const QJsonValue& value, bool& out) {
+      if (value.isBool()) {
+         out = value.toBool();
+         return true;
+      }
+      if (value.isDouble()) {
+         out = value.toDouble() != 0.0;
+         return true;
+      }
+      if (value.isString()) {
+         auto string = value.toString().toStdString();
+         if (cobb::string_says_false(string.c_str())) {
+            out = false;
+            return true;
+         }
+         float numeric = 0.0f;
+         if (cobb::string_to_float(string.c_str(), numeric)) {
+            out = numeric != 0.0f;
+            return true;
+         }
+         return false;
+      }
+      return false;
+   }
+
+   void _apply_json_setting(cobb::ini::setting* current, const QJsonValue& value) {
+      if (!current || value.isUndefined() || value.isNull())
+         return;
+      switch (current->type) {
+         case cobb::ini::setting_type::boolean:
+            {
+               bool v = current->current.b;
+               if (_json_value_to_bool(value, v))
+                  current->current.b = v;
+            }
+            return;
+         case cobb::ini::setting_type::float32:
+            if (value.isDouble()) {
+               current->current.f = (float)value.toDouble();
+               return;
+            }
+            if (value.isString()) {
+               float numeric = 0.0f;
+               auto  string  = value.toString().toStdString();
+               if (cobb::string_to_float(string.c_str(), numeric))
+                  current->current.f = numeric;
+            }
+            return;
+         case cobb::ini::setting_type::integer_signed:
+            if (value.isDouble()) {
+               auto numeric = value.toDouble();
+               if (std::isfinite(numeric) && numeric >= (double)std::numeric_limits<int32_t>::min() && numeric <= (double)std::numeric_limits<int32_t>::max())
+                  current->current.i = (int32_t)numeric;
+               return;
+            }
+            if (value.isString()) {
+               int32_t numeric = 0;
+               auto    string  = value.toString().toStdString();
+               if (cobb::string_to_int(string.c_str(), numeric, true))
+                  current->current.i = numeric;
+            }
+            return;
+         case cobb::ini::setting_type::integer_unsigned:
+            if (value.isDouble()) {
+               auto numeric = value.toDouble();
+               if (std::isfinite(numeric) && numeric >= 0.0 && numeric <= (double)std::numeric_limits<uint32_t>::max())
+                  current->current.u = (uint32_t)numeric;
+               return;
+            }
+            if (value.isString()) {
+               uint32_t numeric = 0;
+               auto     string  = value.toString().toStdString();
+               if (cobb::string_to_int(string.c_str(), numeric, true))
+                  current->current.u = numeric;
+            }
+            return;
+         case cobb::ini::setting_type::string:
+            if (value.isString()) {
+               current->currentStr = value.toString().toStdString();
+               return;
+            }
+            if (value.isBool()) {
+               current->currentStr = value.toBool() ? "TRUE" : "FALSE";
+               return;
+            }
+            if (value.isDouble()) {
+               current->currentStr = std::to_string(value.toDouble());
+               return;
+            }
+            if (value.isArray() || value.isObject()) {
+               QJsonDocument doc(value.isObject() ? QJsonDocument(value.toObject()) : QJsonDocument(value.toArray()));
+               current->currentStr = doc.toJson(QJsonDocument::Compact).toStdString();
+            }
+            return;
+      }
+   }
+
+   QJsonValue _setting_to_json_value(const cobb::ini::setting* setting) {
+      if (!setting)
+         return QJsonValue();
+      switch (setting->type) {
+         case cobb::ini::setting_type::boolean:
+            return setting->current.b;
+         case cobb::ini::setting_type::float32:
+            return setting->current.f;
+         case cobb::ini::setting_type::integer_signed:
+            return setting->current.i;
+         case cobb::ini::setting_type::integer_unsigned:
+            return (qint64)setting->current.u;
+         case cobb::ini::setting_type::string:
+            return QString::fromUtf8(setting->currentStr.c_str());
+      }
+      return QJsonValue();
    }
 }
 
@@ -80,8 +211,11 @@ namespace cobb::ini {
       this->filePath = filepath;
       std::filesystem::path w = filepath;
       std::filesystem::path b = w;
-      w.replace_extension(".ini.tmp");
-      b.replace_extension(".ini.bak");
+      auto ext = filepath.extension().string();
+      if (ext.empty())
+         ext = ".settings";
+      w.replace_extension(ext + ".tmp");
+      b.replace_extension(ext + ".bak");
       this->backupFilePath  = b;
       this->workingFilePath = w;
    }
@@ -132,10 +266,35 @@ namespace cobb::ini {
    //
    void file::load() {
       std::ifstream file;
-      file.open(this->filePath);
+      file.open(this->filePath, std::ios_base::in | std::ios_base::binary);
       if (!file) {
-         printf("Unable to load our INI file for reading. Calling cobb::ini::file::save to generate a default one.\n");
-         this->save(); // generate a new INI file.
+         printf("Unable to load settings file for reading. Calling cobb::ini::file::save to generate a default one.\n");
+         this->save(); // generate a new settings file.
+         return;
+      }
+      if (_path_is_json(this->filePath)) {
+         std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+         file.close();
+         QJsonParseError parseError;
+         auto doc = QJsonDocument::fromJson(QByteArray(contents.data(), (qsizetype)contents.size()), &parseError);
+         if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
+            printf("Unable to parse settings JSON file (%s). Regenerating defaults.\n", parseError.errorString().toUtf8().constData());
+            this->save();
+            return;
+         }
+         auto root = doc.object();
+         for (auto category = root.begin(); category != root.end(); ++category) {
+            if (!category.value().isObject())
+               continue;
+            auto categoryName = category.key().toStdString();
+            auto settings     = category.value().toObject();
+            for (auto entry = settings.begin(); entry != settings.end(); ++entry) {
+               auto key = entry.key().toStdString();
+               if (auto* current = this->get_setting(categoryName.c_str(), key.c_str()))
+                  _apply_json_setting(current, entry.value());
+            }
+         }
+         this->abandon_pending_changes();
          return;
       }
       std::string category = "";
@@ -261,6 +420,49 @@ namespace cobb::ini {
    void file::save() {
       for (auto& setting : this->settings) {
          setting->commit_pending_changes();
+      }
+      if (_path_is_json(this->filePath)) {
+         QJsonObject root;
+         for (auto* setting : this->settings) {
+            const QString category = QString::fromUtf8(setting->category);
+            const QString key      = QString::fromUtf8(setting->name);
+            auto categoryObject    = root.value(category).toObject();
+            categoryObject.insert(key, _setting_to_json_value(setting));
+            root.insert(category, categoryObject);
+         }
+         auto json = QJsonDocument(root).toJson(QJsonDocument::Indented);
+         std::fstream oFile;
+         oFile.open(this->workingFilePath, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+         if (!oFile) {
+            printf("Unable to open working settings file for writing.\n");
+            return;
+         }
+         oFile.write(json.constData(), json.size());
+         oFile.close();
+         std::error_code ec;
+         if (std::filesystem::exists(this->filePath, ec)) {
+            ec.clear();
+            std::filesystem::copy_file(
+               this->filePath,
+               this->backupFilePath,
+               std::filesystem::copy_options::overwrite_existing,
+               ec
+            );
+         }
+         ec.clear();
+         std::filesystem::rename(this->workingFilePath, this->filePath, ec);
+         if (ec) {
+            ec.clear();
+            std::filesystem::copy_file(
+               this->workingFilePath,
+               this->filePath,
+               std::filesystem::copy_options::overwrite_existing,
+               ec
+            );
+            if (!ec)
+               std::filesystem::remove(this->workingFilePath, ec);
+         }
+         return;
       }
       //
       std::fstream oFile;
