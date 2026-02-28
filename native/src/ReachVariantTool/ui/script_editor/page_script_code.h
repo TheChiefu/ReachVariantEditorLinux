@@ -1,5 +1,6 @@
 #pragma once
 #include "ui_page_script_code.h"
+#include <QHash>
 #include <QStringList>
 #include "../../editor_state.h"
 #include "../../game_variants/components/megalo/compiler/compiler.h"
@@ -38,12 +39,19 @@ class ScriptEditorPageScriptCode : public QWidget {
 
       void updateCodeEditorStyle();
       void setupAutocomplete();
+      void rebuildDynamicAutocompleteSymbols();
       void showAutocompletePopup(bool force = false);
       QString completionPrefixUnderCursor() const;
       QString contextExpressionBeforeCursor() const;
       QStringList completionWordsForContextExpression(const QString&) const;
+      QStringList dynamicEnumValuesForType(const QString&) const;
       void applyCompletion(const QString&);
       static QStringList buildMegaloCompletionWords();
 
       bool eventFilter(QObject* watched, QEvent* event) override;
+
+      QStringList _baseCompletionWords;
+      QStringList _dynamicCompletionWords;
+      QStringList _dynamicEnumTypes;
+      QHash<QString, QStringList> _dynamicEnumValuesByType;
 };

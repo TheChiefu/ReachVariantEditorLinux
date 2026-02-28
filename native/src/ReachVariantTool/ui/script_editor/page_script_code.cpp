@@ -1,13 +1,17 @@
 #include "page_script_code.h"
 #include <array>
+#include <utility>
 #include "compiler_unresolved_strings.h"
 #include <QCompleter>
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QListWidget>
+#include <QRegularExpression>
 #include <QScrollBar>
 #include <QShortcut>
+#include <QSet>
 #include <QStringListModel>
+#include <QStringView>
 #include <QTextBlock>
 #include <QTimer>
 #include "../../helpers/qt/color.h"
@@ -36,6 +40,12 @@ namespace {
 }
 
 namespace {
+   struct ce_dynamic_symbols {
+      QStringList words;
+      QStringList enum_types;
+      QHash<QString, QStringList> enum_values_by_type; // lower-case enum name -> values
+   };
+
    const std::array ini_settings = {
       &ReachINI::CodeEditor::bOverrideBackColor,
       &ReachINI::CodeEditor::bOverrideTextColor,
@@ -262,6 +272,122 @@ namespace {
       }
       return out;
    }
+   void _append_unique_case_insensitive(QStringList& list, const QString& value) {
+      if (value.isEmpty())
+         return;
+      if (!_contains_case_insensitive(list, value))
+         list.push_back(value);
+   }
+   QStringList _merge_unique_sorted(const QStringList& a, const QStringList& b) {
+      QStringList out = a;
+      out.reserve(a.size() + b.size());
+      for (const auto& value : b)
+         _append_unique_case_insensitive(out, value);
+      out.sort(Qt::CaseInsensitive);
+      return out;
+   }
+   ce_dynamic_symbols _collect_dynamic_symbols(const QString& script) {
+      static const QRegularExpression alias_re(
+         QStringLiteral("^\\s*alias\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*="),
+         QRegularExpression::CaseInsensitiveOption
+      );
+      static const QRegularExpression enum_re(
+         QStringLiteral("^\\s*enum\\s+([A-Za-z_][A-Za-z0-9_]*)\\b"),
+         QRegularExpression::CaseInsensitiveOption
+      );
+      static const QRegularExpression function_re(
+         QStringLiteral("^\\s*function\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*\\("),
+         QRegularExpression::CaseInsensitiveOption
+      );
+      static const QRegularExpression enum_value_re(
+         QStringLiteral("^\\s*([A-Za-z_][A-Za-z0-9_]*)\\b"),
+         QRegularExpression::CaseInsensitiveOption
+      );
+      static const QRegularExpression enum_end_re(
+         QStringLiteral("^\\s*end\\b"),
+         QRegularExpression::CaseInsensitiveOption
+      );
+
+      ce_dynamic_symbols out;
+      QSet<QString> seen_words;
+      QSet<QString> seen_enum_types;
+
+      auto add_word = [&seen_words, &out](const QString& word) {
+         if (word.isEmpty())
+            return;
+         QString key = word.toLower();
+         if (seen_words.contains(key))
+            return;
+         seen_words.insert(key);
+         out.words.push_back(word);
+      };
+      auto add_enum_type = [&seen_enum_types, &out](const QString& word) {
+         if (word.isEmpty())
+            return;
+         QString key = word.toLower();
+         if (seen_enum_types.contains(key))
+            return;
+         seen_enum_types.insert(key);
+         out.enum_types.push_back(word);
+      };
+      auto add_enum_value = [&out](const QString& enum_key, const QString& value) {
+         if (enum_key.isEmpty() || value.isEmpty())
+            return;
+         auto& values = out.enum_values_by_type[enum_key];
+         _append_unique_case_insensitive(values, value);
+      };
+
+      bool in_enum = false;
+      QString current_enum_key;
+      const auto lines = QStringView(script).split('\n');
+      for (QStringView line_view : lines) {
+         QString line = line_view.toString();
+         int comment = line.indexOf(QStringLiteral("--"));
+         if (comment >= 0)
+            line.truncate(comment);
+         line = line.trimmed();
+         if (line.isEmpty())
+            continue;
+
+         if (in_enum) {
+            if (enum_end_re.match(line).hasMatch()) {
+               in_enum = false;
+               current_enum_key.clear();
+               continue;
+            }
+            auto value_match = enum_value_re.match(line);
+            if (value_match.hasMatch())
+               add_enum_value(current_enum_key, value_match.captured(1));
+            continue;
+         }
+
+         auto alias_match = alias_re.match(line);
+         if (alias_match.hasMatch()) {
+            add_word(alias_match.captured(1));
+            continue;
+         }
+         auto enum_match = enum_re.match(line);
+         if (enum_match.hasMatch()) {
+            QString enum_name = enum_match.captured(1);
+            add_word(enum_name);
+            add_enum_type(enum_name);
+            in_enum = true;
+            current_enum_key = enum_name.toLower();
+            continue;
+         }
+         auto function_match = function_re.match(line);
+         if (function_match.hasMatch()) {
+            add_word(function_match.captured(1));
+            continue;
+         }
+      }
+
+      out.words.sort(Qt::CaseInsensitive);
+      out.enum_types.sort(Qt::CaseInsensitive);
+      for (auto it = out.enum_values_by_type.begin(); it != out.enum_values_by_type.end(); ++it)
+         it.value().sort(Qt::CaseInsensitive);
+      return out;
+   }
 }
 
 ScriptEditorPageScriptCode::ScriptEditorPageScriptCode(QWidget* parent) : QWidget(parent) {
@@ -295,6 +421,7 @@ ScriptEditorPageScriptCode::ScriptEditorPageScriptCode(QWidget* parent) : QWidge
       //
       const QSignalBlocker blocker(this->ui.textEditor);
       this->ui.textEditor->setPlainText(decompiler.current_content);
+      this->rebuildDynamicAutocompleteSymbols();
    });
    QObject::connect(this->ui.buttonCompile, &QPushButton::clicked, [this]() {
       auto& editor = ReachEditorState::get();
@@ -598,8 +725,24 @@ QStringList ScriptEditorPageScriptCode::buildMegaloCompletionWords() {
    words.sort(Qt::CaseInsensitive);
    return words;
 }
+void ScriptEditorPageScriptCode::rebuildDynamicAutocompleteSymbols() {
+   auto symbols = _collect_dynamic_symbols(this->ui.textEditor->toPlainText());
+   this->_dynamicCompletionWords = std::move(symbols.words);
+   this->_dynamicEnumTypes = std::move(symbols.enum_types);
+   this->_dynamicEnumValuesByType = std::move(symbols.enum_values_by_type);
+   this->_defaultCompletionWords = _merge_unique_sorted(this->_baseCompletionWords, this->_dynamicCompletionWords);
+}
+QStringList ScriptEditorPageScriptCode::dynamicEnumValuesForType(const QString& type) const {
+   if (type.isEmpty())
+      return {};
+   auto it = this->_dynamicEnumValuesByType.constFind(type.toLower());
+   if (it == this->_dynamicEnumValuesByType.cend())
+      return {};
+   return it.value();
+}
 void ScriptEditorPageScriptCode::setupAutocomplete() {
-   this->_defaultCompletionWords = buildMegaloCompletionWords();
+   this->_baseCompletionWords = buildMegaloCompletionWords();
+   this->rebuildDynamicAutocompleteSymbols();
    this->_completionModel = new QStringListModel(this->_defaultCompletionWords, this);
    this->_completer = new QCompleter(this->_completionModel, this);
    this->_completer->setCaseSensitivity(Qt::CaseInsensitive);
@@ -614,6 +757,7 @@ void ScriptEditorPageScriptCode::setupAutocomplete() {
    QObject::connect(this->ui.textEditor, &QTextEdit::textChanged, this, [this]() {
       if (this->_isApplyingCompletion)
          return;
+      this->rebuildDynamicAutocompleteSymbols();
       this->showAutocompletePopup(false);
    });
 
@@ -680,7 +824,7 @@ QStringList ScriptEditorPageScriptCode::completionWordsForContextExpression(cons
    if (segments.isEmpty())
       return {};
 
-   auto enum_values_for_type = [](const QString& type) -> QStringList {
+   auto builtin_enum_values_for_type = [](const QString& type) -> QStringList {
       if (type.compare(QStringLiteral("damage_reporting_modifier"), Qt::CaseInsensitive) == 0)
          return ce_context_enum_values_damage_reporting_modifier;
       if (type.compare(QStringLiteral("damage_reporting_type"), Qt::CaseInsensitive) == 0)
@@ -695,11 +839,18 @@ QStringList ScriptEditorPageScriptCode::completionWordsForContextExpression(cons
 
    if (first.compare(QStringLiteral("enums"), Qt::CaseInsensitive) == 0) {
       if (segments.size() == 1)
-         return ce_context_enum_types;
-      return enum_values_for_type(segments[1]);
+         return _merge_unique_sorted(ce_context_enum_types, this->_dynamicEnumTypes);
+      return _merge_unique_sorted(
+         builtin_enum_values_for_type(segments[1]),
+         this->dynamicEnumValuesForType(segments[1])
+      );
    }
-   if (_contains_case_insensitive(ce_context_enum_types, first) && segments.size() == 1)
-      return enum_values_for_type(first);
+   if (segments.size() == 1) {
+      QStringList builtins = builtin_enum_values_for_type(first);
+      QStringList dynamic  = this->dynamicEnumValuesForType(first);
+      if (!builtins.isEmpty() || !dynamic.isEmpty())
+         return _merge_unique_sorted(builtins, dynamic);
+   }
 
    if (first.compare(QStringLiteral("global"), Qt::CaseInsensitive) == 0 || first.compare(QStringLiteral("temporaries"), Qt::CaseInsensitive) == 0) {
       if (segments.size() == 1)
