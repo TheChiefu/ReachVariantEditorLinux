@@ -176,12 +176,16 @@ ProgramOptionsDialog::ProgramOptionsDialog(QWidget* parent) : QDialog(parent) {
                this->ui.synHighColor->setColor(option.colors.text);
             }
          });
-         widget->addItem("Comment",    QStringList({"sFormatCommentBlock", "sFormatCommentLine"}));
-         widget->addItem("Keyword",    "sFormatKeyword");
-         widget->addItem("Subkeyword", "sFormatSubkeyword");
-         widget->addItem("Number",     "sFormatNumber");
-         widget->addItem("Operator",   "sFormatOperator");
-         widget->addItem("String",     "sFormatStringSimple");
+         widget->addItem("Comments",             QStringList({"sFormatCommentBlock", "sFormatCommentLine"}));
+         widget->addItem("Reserved Word",        "sFormatKeyword");
+         widget->addItem("Keyword Phrase",       "sFormatSubkeyword");
+         widget->addItem("Boolean Literal",      "sFormatBoolean");
+         widget->addItem("Built-in Constant",    "sFormatConstant");
+         widget->addItem("Numeric Literal",      "sFormatNumber");
+         widget->addItem("Operator",             "sFormatOperator");
+         widget->addItem("Member Path",          "sFormatMember");
+         widget->addItem("Function/Method Call", "sFormatCall");
+         widget->addItem("String Literal",       "sFormatStringSimple");
          //
          QObject::connect(this->ui.synHighBold, &QAbstractButton::toggled, this, [this](bool checked) {
             auto c = this->syntaxHighlightOptionFromUI();

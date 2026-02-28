@@ -103,8 +103,12 @@ class MegaloSyntaxHighlighter : public QSyntaxHighlighter {
          } comment;
          QTextCharFormat keyword;
          QTextCharFormat subkeyword;
+         QTextCharFormat boolean;
+         QTextCharFormat constant;
          QTextCharFormat number;
          QTextCharFormat op;
+         QTextCharFormat member;
+         QTextCharFormat call;
          struct {
             QTextCharFormat simple;
             QTextCharFormat block;

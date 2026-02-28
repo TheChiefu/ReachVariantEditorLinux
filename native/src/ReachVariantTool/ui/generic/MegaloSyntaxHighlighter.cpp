@@ -51,8 +51,12 @@ namespace {
       &ReachINI::CodeEditor::sFormatCommentBlock,
       &ReachINI::CodeEditor::sFormatKeyword,
       &ReachINI::CodeEditor::sFormatSubkeyword,
+      &ReachINI::CodeEditor::sFormatBoolean,
+      &ReachINI::CodeEditor::sFormatConstant,
       &ReachINI::CodeEditor::sFormatNumber,
       &ReachINI::CodeEditor::sFormatOperator,
+      &ReachINI::CodeEditor::sFormatMember,
+      &ReachINI::CodeEditor::sFormatCall,
       &ReachINI::CodeEditor::sFormatStringSimple,
       &ReachINI::CodeEditor::sFormatStringBlock,
    };
@@ -71,7 +75,7 @@ namespace {
          return;
       done = true;
       //
-      for (auto& s : { "alias", "alt", "altif", "and", "declare", "do", "end", "enum", "for", "function", "if", "not", "on", "or", "then" }) {
+      for (auto& s : { "alias", "alt", "altif", "and", "declare", "do", "else", "elseif", "end", "enum", "for", "function", "if", "inline", "not", "on", "or", "then" }) {
          auto* k = new Keyword;
          k->word = s;
          all_keywords.push_back(k);
@@ -89,6 +93,45 @@ namespace {
          next->make_subkeyword("object")->make_subkeyword("with", true)->make_subkeyword("label");
          next->make_subkeyword("team");
       }
+      if (auto* word = _lookup_keyword("on")) {
+         word->make_phrase({ "init" });
+         word->make_phrase({ "local" });
+         word->make_phrase({ "local", "init" });
+         word->make_phrase({ "pregame" });
+         word->make_phrase({ "host", "migration" });
+         word->make_phrase({ "double", "host", "migration" });
+         word->make_phrase({ "object", "death" });
+      }
+   }
+
+   const std::array builtin_constant_values = {
+      QString("all_players"),
+      QString("current_object"),
+      QString("current_player"),
+      QString("current_team"),
+      QString("hud_player"),
+      QString("hud_player_team"),
+      QString("hud_target_object"),
+      QString("hud_target_player"),
+      QString("hud_target_team"),
+      QString("killed_object"),
+      QString("killer_object"),
+      QString("killer_player"),
+      QString("local_player"),
+      QString("local_team"),
+      QString("neutral_team"),
+      QString("no_object"),
+      QString("no_player"),
+      QString("no_team"),
+      QString("no_widget"),
+   };
+
+   template<size_t N>
+   bool is_word_in_list(const QStringView& view, const std::array<QString, N>& values) {
+      for (const auto& value : values)
+         if (view.compare(value, Qt::CaseInsensitive) == 0)
+            return true;
+      return false;
    }
 
    const std::array operators = {
@@ -397,6 +440,29 @@ void MegaloSyntaxHighlighter::highlightBlock(const QString& text) {
                   i += length - 1;
                   continue;
                }
+               if (!view.isEmpty() && (view[0].isLetter() || view[0] == '_')) {
+                  if (view.compare(QStringLiteral("true"), Qt::CaseInsensitive) == 0 || view.compare(QStringLiteral("false"), Qt::CaseInsensitive) == 0) {
+                     this->setFormat(i, view.size(), this->formats.boolean);
+                     i += view.size() - 1;
+                     continue;
+                  }
+                  if (is_word_in_list(view, builtin_constant_values)) {
+                     this->setFormat(i, view.size(), this->formats.constant);
+                     i += view.size() - 1;
+                     continue;
+                  }
+                  int dot = view.lastIndexOf('.');
+                  if (dot >= 0) {
+                     this->setFormat(i, view.size(), this->formats.member);
+                  }
+                  bool is_call = (i + view.size() < size) && text[i + view.size()] == '(';
+                  if (is_call) {
+                     int call_offset = dot >= 0 ? dot + 1 : 0;
+                     int call_length = view.size() - call_offset;
+                     if (call_length > 0)
+                        this->setFormat(i + call_offset, call_length, this->formats.call);
+                  }
+               }
             }
          }
          if (i == 0 || is_keyword_boundary(text[i - 1])) {
@@ -542,6 +608,29 @@ void MegaloSyntaxHighlighter::reloadFormattingFromINI() {
       }
    }
    {
+      auto  setting = QString::fromUtf8(ReachINI::CodeEditor::sFormatBoolean.currentStr.c_str());
+      auto& format  = this->formats.boolean;
+      auto  working = ReachINI::parse_syntax_highlight_option(setting, error);
+      if (!error) {
+         format = working;
+      } else {
+         format = QTextCharFormat();
+         format.setForeground(QColor::fromRgb(86, 156, 214));
+         format.setFontWeight(QFont::Weight::Bold);
+      }
+   }
+   {
+      auto  setting = QString::fromUtf8(ReachINI::CodeEditor::sFormatConstant.currentStr.c_str());
+      auto& format  = this->formats.constant;
+      auto  working = ReachINI::parse_syntax_highlight_option(setting, error);
+      if (!error) {
+         format = working;
+      } else {
+         format = QTextCharFormat();
+         format.setForeground(QColor::fromRgb(78, 201, 176));
+      }
+   }
+   {
       auto  setting = QString::fromUtf8(ReachINI::CodeEditor::sFormatNumber.currentStr.c_str());
       auto& format  = this->formats.number;
       auto  working = ReachINI::parse_syntax_highlight_option(setting, error);
@@ -562,6 +651,28 @@ void MegaloSyntaxHighlighter::reloadFormattingFromINI() {
          format = QTextCharFormat();
          format.setForeground(QColor::fromRgb(0, 0, 128));
          format.setFontWeight(QFont::Weight::Bold);
+      }
+   }
+   {
+      auto  setting = QString::fromUtf8(ReachINI::CodeEditor::sFormatMember.currentStr.c_str());
+      auto& format  = this->formats.member;
+      auto  working = ReachINI::parse_syntax_highlight_option(setting, error);
+      if (!error) {
+         format = working;
+      } else {
+         format = QTextCharFormat();
+         format.setForeground(QColor::fromRgb(86, 156, 214));
+      }
+   }
+   {
+      auto  setting = QString::fromUtf8(ReachINI::CodeEditor::sFormatCall.currentStr.c_str());
+      auto& format  = this->formats.call;
+      auto  working = ReachINI::parse_syntax_highlight_option(setting, error);
+      if (!error) {
+         format = working;
+      } else {
+         format = QTextCharFormat();
+         format.setForeground(QColor::fromRgb(220, 220, 170));
       }
    }
    {
