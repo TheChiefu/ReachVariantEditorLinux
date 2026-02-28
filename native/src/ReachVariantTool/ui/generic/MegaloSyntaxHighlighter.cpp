@@ -53,6 +53,8 @@ namespace {
       &ReachINI::CodeEditor::sFormatSubkeyword,
       &ReachINI::CodeEditor::sFormatBoolean,
       &ReachINI::CodeEditor::sFormatConstant,
+      &ReachINI::CodeEditor::sFormatNamespace,
+      &ReachINI::CodeEditor::sFormatEnumValue,
       &ReachINI::CodeEditor::sFormatNumber,
       &ReachINI::CodeEditor::sFormatOperator,
       &ReachINI::CodeEditor::sFormatMember,
@@ -125,6 +127,61 @@ namespace {
       QString("no_team"),
       QString("no_widget"),
    };
+   const std::array namespace_identifiers = {
+      QString("enums"),
+      QString("game"),
+      QString("global"),
+      QString("temporaries"),
+   };
+   const std::array builtin_enum_types = {
+      QString("damage_reporting_modifier"),
+      QString("damage_reporting_type"),
+      QString("orientation"),
+   };
+
+   struct IdentifierSegment {
+      int offset = 0;
+      int length = 0;
+   };
+
+   template<size_t N>
+   int extract_identifier_segments(const QStringView& view, std::array<IdentifierSegment, N>& out) {
+      int count = 0;
+      int i     = 0;
+      const int size = view.size();
+      while (i < size && count < (int)N) {
+         QChar c = view[i];
+         if (c == '.') {
+            ++i;
+            continue;
+         }
+         if (c == '[') {
+            ++i;
+            while (i < size && view[i] != ']')
+               ++i;
+            if (i < size)
+               ++i;
+            continue;
+         }
+         if (c == ']') {
+            ++i;
+            continue;
+         }
+         int start = i;
+         while (i < size) {
+            c = view[i];
+            if (c == '.' || c == '[' || c == ']')
+               break;
+            ++i;
+         }
+         if (i > start) {
+            out[count].offset = start;
+            out[count].length = i - start;
+            ++count;
+         }
+      }
+      return count;
+   }
 
    template<size_t N>
    bool is_word_in_list(const QStringView& view, const std::array<QString, N>& values) {
@@ -451,6 +508,26 @@ void MegaloSyntaxHighlighter::highlightBlock(const QString& text) {
                      i += view.size() - 1;
                      continue;
                   }
+                  {
+                     std::array<IdentifierSegment, 8> segments = {};
+                     int segment_count = extract_identifier_segments(view, segments);
+                     if (segment_count > 0) {
+                        auto first_segment = view.mid(segments[0].offset, segments[0].length);
+                        if (is_word_in_list(first_segment, namespace_identifiers))
+                           this->setFormat(i + segments[0].offset, segments[0].length, this->formats.namespace_name);
+                        bool has_enum_value = false;
+                        IdentifierSegment enum_value_segment;
+                        if (segment_count >= 3 && first_segment.compare(QStringLiteral("enums"), Qt::CaseInsensitive) == 0) {
+                           has_enum_value = true;
+                           enum_value_segment = segments[segment_count - 1];
+                        } else if (segment_count == 2 && is_word_in_list(first_segment, builtin_enum_types)) {
+                           has_enum_value = true;
+                           enum_value_segment = segments[segment_count - 1];
+                        }
+                        if (has_enum_value)
+                           this->setFormat(i + enum_value_segment.offset, enum_value_segment.length, this->formats.enum_value);
+                     }
+                  }
                   int dot = view.lastIndexOf('.');
                   if (dot >= 0) {
                      this->setFormat(i, view.size(), this->formats.member);
@@ -568,7 +645,7 @@ void MegaloSyntaxHighlighter::reloadFormattingFromINI() {
       } else {
          format = QTextCharFormat();
          format.setFontItalic(true);
-         format.setForeground(QColor::fromRgb(32, 160, 8));
+         format.setForeground(QColor::fromRgb(106, 153, 85));
       }
    }
    {
@@ -580,7 +657,7 @@ void MegaloSyntaxHighlighter::reloadFormattingFromINI() {
       } else {
          format = QTextCharFormat();
          format.setFontItalic(true);
-         format.setForeground(QColor::fromRgb(32, 160, 8));
+         format.setForeground(QColor::fromRgb(106, 153, 85));
       }
    }
    {
@@ -592,7 +669,7 @@ void MegaloSyntaxHighlighter::reloadFormattingFromINI() {
       } else {
          format = QTextCharFormat();
          format.setFontWeight(QFont::Weight::Bold);
-         format.setForeground(QColor::fromRgb(0, 16, 255));
+         format.setForeground(QColor::fromRgb(197, 134, 192));
       }
    }
    {
@@ -604,7 +681,7 @@ void MegaloSyntaxHighlighter::reloadFormattingFromINI() {
       } else {
          format = QTextCharFormat();
          format.setFontWeight(QFont::Weight::Bold);
-         format.setForeground(QColor::fromRgb(0, 120, 190));
+         format.setForeground(QColor::fromRgb(78, 201, 176));
       }
    }
    {
@@ -627,7 +704,29 @@ void MegaloSyntaxHighlighter::reloadFormattingFromINI() {
          format = working;
       } else {
          format = QTextCharFormat();
-         format.setForeground(QColor::fromRgb(78, 201, 176));
+         format.setForeground(QColor::fromRgb(220, 220, 170));
+      }
+   }
+   {
+      auto  setting = QString::fromUtf8(ReachINI::CodeEditor::sFormatNamespace.currentStr.c_str());
+      auto& format  = this->formats.namespace_name;
+      auto  working = ReachINI::parse_syntax_highlight_option(setting, error);
+      if (!error) {
+         format = working;
+      } else {
+         format = QTextCharFormat();
+         format.setForeground(QColor::fromRgb(156, 220, 254));
+      }
+   }
+   {
+      auto  setting = QString::fromUtf8(ReachINI::CodeEditor::sFormatEnumValue.currentStr.c_str());
+      auto& format  = this->formats.enum_value;
+      auto  working = ReachINI::parse_syntax_highlight_option(setting, error);
+      if (!error) {
+         format = working;
+      } else {
+         format = QTextCharFormat();
+         format.setForeground(QColor::fromRgb(181, 206, 168));
       }
    }
    {
@@ -638,7 +737,7 @@ void MegaloSyntaxHighlighter::reloadFormattingFromINI() {
          format = working;
       } else {
          format = QTextCharFormat();
-         format.setForeground(QColor::fromRgb(200, 100, 0));
+         format.setForeground(QColor::fromRgb(181, 206, 168));
       }
    }
    {
@@ -649,7 +748,7 @@ void MegaloSyntaxHighlighter::reloadFormattingFromINI() {
          format = working;
       } else {
          format = QTextCharFormat();
-         format.setForeground(QColor::fromRgb(0, 0, 128));
+         format.setForeground(QColor::fromRgb(212, 212, 212));
          format.setFontWeight(QFont::Weight::Bold);
       }
    }
@@ -661,7 +760,7 @@ void MegaloSyntaxHighlighter::reloadFormattingFromINI() {
          format = working;
       } else {
          format = QTextCharFormat();
-         format.setForeground(QColor::fromRgb(86, 156, 214));
+         format.setForeground(QColor::fromRgb(156, 220, 254));
       }
    }
    {
@@ -683,7 +782,7 @@ void MegaloSyntaxHighlighter::reloadFormattingFromINI() {
          format = working;
       } else {
          format = QTextCharFormat();
-         format.setForeground(QColor::fromRgb(140, 140, 140));
+         format.setForeground(QColor::fromRgb(206, 145, 120));
       }
    }
    {
@@ -694,7 +793,7 @@ void MegaloSyntaxHighlighter::reloadFormattingFromINI() {
          format = working;
       } else {
          format = QTextCharFormat();
-         format.setForeground(QColor::fromRgb(160, 0, 80));
+         format.setForeground(QColor::fromRgb(206, 145, 120));
       }
    }
 }

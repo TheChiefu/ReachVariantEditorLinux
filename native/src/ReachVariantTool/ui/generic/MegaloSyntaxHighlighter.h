@@ -105,6 +105,8 @@ class MegaloSyntaxHighlighter : public QSyntaxHighlighter {
          QTextCharFormat subkeyword;
          QTextCharFormat boolean;
          QTextCharFormat constant;
+         QTextCharFormat namespace_name;
+         QTextCharFormat enum_value;
          QTextCharFormat number;
          QTextCharFormat op;
          QTextCharFormat member;

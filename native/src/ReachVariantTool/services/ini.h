@@ -26,18 +26,20 @@ namespace ReachINI {
       REACHTOOL_MAKE_INI_SETTING(sBackColor,          "CodeEditor", "rgb(255, 255, 255)");
       REACHTOOL_MAKE_INI_SETTING(sTextColor,          "CodeEditor", "rgb(  0,   0,   0)");
       REACHTOOL_MAKE_INI_SETTING(sFontFamily,         "CodeEditor", "Courier New");
-      REACHTOOL_MAKE_INI_SETTING(sFormatCommentLine,  "CodeEditor", "rgb( 32, 160,   8) italic");
-      REACHTOOL_MAKE_INI_SETTING(sFormatCommentBlock, "CodeEditor", "rgb( 32, 160,   8) italic");
-      REACHTOOL_MAKE_INI_SETTING(sFormatKeyword,      "CodeEditor", "rgb(  0,  16, 255) bold");
-      REACHTOOL_MAKE_INI_SETTING(sFormatSubkeyword,   "CodeEditor", "rgb(  0, 120, 190) bold");
+      REACHTOOL_MAKE_INI_SETTING(sFormatCommentLine,  "CodeEditor", "rgb(106, 153,  85) italic");
+      REACHTOOL_MAKE_INI_SETTING(sFormatCommentBlock, "CodeEditor", "rgb(106, 153,  85) italic");
+      REACHTOOL_MAKE_INI_SETTING(sFormatKeyword,      "CodeEditor", "rgb(197, 134, 192) bold");
+      REACHTOOL_MAKE_INI_SETTING(sFormatSubkeyword,   "CodeEditor", "rgb( 78, 201, 176) bold");
       REACHTOOL_MAKE_INI_SETTING(sFormatBoolean,      "CodeEditor", "rgb( 86, 156, 214) bold");
-      REACHTOOL_MAKE_INI_SETTING(sFormatConstant,     "CodeEditor", "rgb( 78, 201, 176)");
-      REACHTOOL_MAKE_INI_SETTING(sFormatNumber,       "CodeEditor", "rgb(200, 100,   0)");
-      REACHTOOL_MAKE_INI_SETTING(sFormatOperator,     "CodeEditor", "rgb(  0,   0, 128) bold");
-      REACHTOOL_MAKE_INI_SETTING(sFormatMember,       "CodeEditor", "rgb( 86, 156, 214)");
+      REACHTOOL_MAKE_INI_SETTING(sFormatConstant,     "CodeEditor", "rgb(220, 220, 170)");
+      REACHTOOL_MAKE_INI_SETTING(sFormatNamespace,    "CodeEditor", "rgb(156, 220, 254)");
+      REACHTOOL_MAKE_INI_SETTING(sFormatEnumValue,    "CodeEditor", "rgb(181, 206, 168)");
+      REACHTOOL_MAKE_INI_SETTING(sFormatNumber,       "CodeEditor", "rgb(181, 206, 168)");
+      REACHTOOL_MAKE_INI_SETTING(sFormatOperator,     "CodeEditor", "rgb(212, 212, 212) bold");
+      REACHTOOL_MAKE_INI_SETTING(sFormatMember,       "CodeEditor", "rgb(156, 220, 254)");
       REACHTOOL_MAKE_INI_SETTING(sFormatCall,         "CodeEditor", "rgb(220, 220, 170)");
-      REACHTOOL_MAKE_INI_SETTING(sFormatStringSimple, "CodeEditor", "rgb(140, 140, 140)");
-      REACHTOOL_MAKE_INI_SETTING(sFormatStringBlock,  "CodeEditor", "rgb(160,   0,  80)");
+      REACHTOOL_MAKE_INI_SETTING(sFormatStringSimple, "CodeEditor", "rgb(206, 145, 120)");
+      REACHTOOL_MAKE_INI_SETTING(sFormatStringBlock,  "CodeEditor", "rgb(206, 145, 120)");
    }
    namespace Compiler {
       REACHTOOL_MAKE_INI_SETTING(bInlineIfs, "Compiler", true);

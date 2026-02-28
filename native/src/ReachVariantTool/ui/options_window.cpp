@@ -181,6 +181,8 @@ ProgramOptionsDialog::ProgramOptionsDialog(QWidget* parent) : QDialog(parent) {
          widget->addItem("Keyword Phrase",       "sFormatSubkeyword");
          widget->addItem("Boolean Literal",      "sFormatBoolean");
          widget->addItem("Built-in Constant",    "sFormatConstant");
+         widget->addItem("Namespace",            "sFormatNamespace");
+         widget->addItem("Enum Value",           "sFormatEnumValue");
          widget->addItem("Numeric Literal",      "sFormatNumber");
          widget->addItem("Operator",             "sFormatOperator");
          widget->addItem("Member Path",          "sFormatMember");
