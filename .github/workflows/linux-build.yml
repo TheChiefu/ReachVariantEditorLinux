@@ -15,7 +15,10 @@ permissions:
 
 jobs:
   build-linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    env:
+      CC: gcc-14
+      CXX: g++-14
 
     steps:
       - name: Checkout
@@ -24,17 +27,29 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
+          sudo apt-get install -y --no-install-recommends software-properties-common
+          if ! apt-cache show g++-14 >/dev/null 2>&1; then
+            sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+            sudo apt-get update
+          fi
           sudo apt-get install -y --no-install-recommends \
             cmake \
             ninja-build \
-            g++ \
+            gcc-14 \
+            g++-14 \
             qt6-base-dev \
             qt6-base-dev-tools \
             qt6-tools-dev-tools \
             zlib1g-dev
 
+      - name: Toolchain info
+        run: |
+          ${CC} --version
+          ${CXX} --version
+          cmake --version
+
       - name: Configure
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX}
 
       - name: Build
         run: cmake --build build --config Release
