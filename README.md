@@ -33,12 +33,19 @@ Settings file:
 - Format: JSON (`ReachVariantTool.json`)
 - Older `.ini` settings files are migrated automatically on first run when found
 
-## CI Builds (GitHub)
+## Release Build Upload (Manual)
 
-This repository includes a workflow at `.github/workflows/linux-build.yml`.
+Create a release archive from your local Linux build:
 
-- Every push/PR can produce a downloadable Linux artifact from the Actions tab.
-- Every pushed tag also uploads the build archive (`.tar.gz`) and checksum (`.sha256`) to a GitHub Release.
+```bash
+./packaging/linux/create-release-archive.sh v1.0.0
+```
+
+This generates:
+- `ReachVariantTool-linux-x86_64-v1.0.0.tar.gz`
+- `ReachVariantTool-linux-x86_64-v1.0.0.tar.gz.sha256`
+
+Then upload both files to a GitHub Release in your fork.
 
 ## Contributing
 
