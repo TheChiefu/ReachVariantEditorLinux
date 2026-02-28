@@ -1,8 +1,13 @@
 #pragma once
 #include "ui_page_script_code.h"
+#include <QStringList>
 #include "../../editor_state.h"
 #include "../../game_variants/components/megalo/compiler/compiler.h"
 #include "../../game_variants/components/megalo/decompiler/decompiler.h"
+
+class QCompleter;
+class QEvent;
+class QStringListModel;
 
 class ScriptEditorPageScriptCode : public QWidget {
    Q_OBJECT
@@ -21,6 +26,9 @@ class ScriptEditorPageScriptCode : public QWidget {
       log_t _lastWarnings;
       log_t _lastErrors;
       log_t _lastFatals;
+      bool _isApplyingCompletion = false;
+      QCompleter* _completer = nullptr;
+      QStringListModel* _completionModel = nullptr;
       //
       void updateLog(Compiler&);
       void redrawLog();
@@ -28,4 +36,11 @@ class ScriptEditorPageScriptCode : public QWidget {
       void jumpToLogItem(QListWidgetItem&);
 
       void updateCodeEditorStyle();
+      void setupAutocomplete();
+      void showAutocompletePopup(bool force = false);
+      QString completionPrefixUnderCursor() const;
+      void applyCompletion(const QString&);
+      static QStringList buildMegaloCompletionWords();
+
+      bool eventFilter(QObject* watched, QEvent* event) override;
 };

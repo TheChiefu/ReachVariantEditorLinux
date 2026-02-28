@@ -1,9 +1,15 @@
 #include "page_script_code.h"
 #include <array>
 #include "compiler_unresolved_strings.h"
+#include <QCompleter>
+#include <QKeyEvent>
 #include <QMessageBox>
 #include <QListWidget>
+#include <QScrollBar>
+#include <QShortcut>
+#include <QStringListModel>
 #include <QTextBlock>
+#include <QTimer>
 #include "../../helpers/qt/color.h"
 #include "../generic/MegaloSyntaxHighlighter.h"
 #include "../../services/ini.h"
@@ -44,6 +50,7 @@ ScriptEditorPageScriptCode::ScriptEditorPageScriptCode(QWidget* parent) : QWidge
    {
       new MegaloSyntaxHighlighter(this->ui.textEditor->document());
       this->updateCodeEditorStyle();
+      this->setupAutocomplete();
       QObject::connect(&ReachINI::getForQt(), &cobb::qt::ini::file::settingChanged, this, [this](cobb::ini::setting* setting, cobb::ini::setting_value_union oldValue, cobb::ini::setting_value_union newValue) {
          for (auto* ptr : ini_settings) {
             if (setting == ptr) {
@@ -280,4 +287,208 @@ void ScriptEditorPageScriptCode::updateCodeEditorStyle() {
    }
    qss = QString("QTextEdit { %1 }").arg(qss); // needed to prevent settings from bleeding into e.g. the scrollbar
    widget->setStyleSheet(qss);
+}
+
+QStringList ScriptEditorPageScriptCode::buildMegaloCompletionWords() {
+   QStringList words = {
+      // Keywords:
+      QStringLiteral("alias"),
+      QStringLiteral("alt"),
+      QStringLiteral("altif"),
+      QStringLiteral("and"),
+      QStringLiteral("declare"),
+      QStringLiteral("do"),
+      QStringLiteral("else"),
+      QStringLiteral("elseif"),
+      QStringLiteral("end"),
+      QStringLiteral("enum"),
+      QStringLiteral("for"),
+      QStringLiteral("function"),
+      QStringLiteral("if"),
+      QStringLiteral("inline"),
+      QStringLiteral("not"),
+      QStringLiteral("on"),
+      QStringLiteral("or"),
+      QStringLiteral("then"),
+
+      // Keyword phrases and language words:
+      QStringLiteral("each"),
+      QStringLiteral("object"),
+      QStringLiteral("player"),
+      QStringLiteral("team"),
+      QStringLiteral("randomly"),
+      QStringLiteral("with"),
+      QStringLiteral("label"),
+      QStringLiteral("network"),
+      QStringLiteral("priority"),
+      QStringLiteral("low"),
+      QStringLiteral("high"),
+      QStringLiteral("local"),
+      QStringLiteral("init"),
+      QStringLiteral("pregame"),
+      QStringLiteral("host"),
+      QStringLiteral("migration"),
+      QStringLiteral("double"),
+      QStringLiteral("death"),
+
+      // Core namespaces:
+      QStringLiteral("global"),
+      QStringLiteral("game"),
+      QStringLiteral("enums"),
+      QStringLiteral("temporaries"),
+
+      // Frequently-used constants/built-ins:
+      QStringLiteral("true"),
+      QStringLiteral("false"),
+      QStringLiteral("all_players"),
+      QStringLiteral("current_object"),
+      QStringLiteral("current_player"),
+      QStringLiteral("current_team"),
+      QStringLiteral("hud_player"),
+      QStringLiteral("hud_player_team"),
+      QStringLiteral("hud_target_object"),
+      QStringLiteral("hud_target_player"),
+      QStringLiteral("hud_target_team"),
+      QStringLiteral("killed_object"),
+      QStringLiteral("killer_object"),
+      QStringLiteral("killer_player"),
+      QStringLiteral("local_player"),
+      QStringLiteral("local_team"),
+      QStringLiteral("neutral_team"),
+      QStringLiteral("no_object"),
+      QStringLiteral("no_player"),
+      QStringLiteral("no_team"),
+      QStringLiteral("no_widget"),
+
+      // Common enum stems:
+      QStringLiteral("damage_reporting_modifier"),
+      QStringLiteral("damage_reporting_type"),
+      QStringLiteral("orientation"),
+
+      // Frequently-used API names:
+      QStringLiteral("rand"),
+      QStringLiteral("send_incident"),
+      QStringLiteral("apply_traits"),
+      QStringLiteral("set_text"),
+      QStringLiteral("set_visibility"),
+      QStringLiteral("set_waypoint_icon"),
+      QStringLiteral("set_waypoint_priority"),
+      QStringLiteral("set_waypoint_visibility"),
+   };
+   words.removeDuplicates();
+   words.sort(Qt::CaseInsensitive);
+   return words;
+}
+void ScriptEditorPageScriptCode::setupAutocomplete() {
+   this->_completionModel = new QStringListModel(buildMegaloCompletionWords(), this);
+   this->_completer = new QCompleter(this->_completionModel, this);
+   this->_completer->setCaseSensitivity(Qt::CaseInsensitive);
+   this->_completer->setFilterMode(Qt::MatchStartsWith);
+   this->_completer->setCompletionMode(QCompleter::PopupCompletion);
+   this->_completer->setWrapAround(false);
+   this->_completer->setWidget(this->ui.textEditor);
+
+   QObject::connect(this->_completer, QOverload<const QString&>::of(&QCompleter::activated), this, [this](const QString& completion) {
+      this->applyCompletion(completion);
+   });
+   QObject::connect(this->ui.textEditor, &QTextEdit::textChanged, this, [this]() {
+      if (this->_isApplyingCompletion)
+         return;
+      this->showAutocompletePopup(false);
+   });
+
+   auto* shortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Space), this->ui.textEditor);
+   QObject::connect(shortcut, &QShortcut::activated, this, [this]() {
+      this->showAutocompletePopup(true);
+   });
+
+   this->ui.textEditor->installEventFilter(this);
+   this->_completer->popup()->installEventFilter(this);
+}
+QString ScriptEditorPageScriptCode::completionPrefixUnderCursor() const {
+   auto cursor = this->ui.textEditor->textCursor();
+   cursor.select(QTextCursor::WordUnderCursor);
+   return cursor.selectedText();
+}
+void ScriptEditorPageScriptCode::showAutocompletePopup(bool force) {
+   if (!this->_completer || !this->ui.textEditor->hasFocus())
+      return;
+
+   QString prefix = this->completionPrefixUnderCursor();
+   if (!force && prefix.size() < 2) {
+      this->_completer->popup()->hide();
+      return;
+   }
+
+   this->_completer->setCompletionPrefix(prefix);
+   if (this->_completer->completionCount() <= 0) {
+      this->_completer->popup()->hide();
+      return;
+   }
+
+   auto* popup = this->_completer->popup();
+   popup->setCurrentIndex(this->_completer->completionModel()->index(0, 0));
+
+   QRect cr = this->ui.textEditor->cursorRect();
+   int width = popup->sizeHint().width() + popup->verticalScrollBar()->sizeHint().width() + 8;
+   if (width < 180)
+      width = 180;
+   cr.setWidth(width);
+   this->_completer->complete(cr);
+}
+void ScriptEditorPageScriptCode::applyCompletion(const QString& completion) {
+   if (completion.isEmpty())
+      return;
+
+   auto cursor = this->ui.textEditor->textCursor();
+   cursor.select(QTextCursor::WordUnderCursor);
+   this->_isApplyingCompletion = true;
+   cursor.insertText(completion);
+   this->_isApplyingCompletion = false;
+   this->ui.textEditor->setTextCursor(cursor);
+}
+bool ScriptEditorPageScriptCode::eventFilter(QObject* watched, QEvent* event) {
+   if (this->_completer && event->type() == QEvent::KeyPress) {
+      bool from_editor = watched == this->ui.textEditor;
+      bool from_popup  = watched == this->_completer->popup();
+      if (!from_editor && !from_popup)
+         return QWidget::eventFilter(watched, event);
+
+      auto* key_event = static_cast<QKeyEvent*>(event);
+      auto* popup = this->_completer->popup();
+      if (popup && popup->isVisible()) {
+         switch (key_event->key()) {
+            case Qt::Key_Escape:
+               popup->hide();
+               return true;
+            case Qt::Key_Tab:
+            case Qt::Key_Backtab:
+            case Qt::Key_Return:
+            case Qt::Key_Enter: {
+               auto index = popup->currentIndex();
+               if (index.isValid()) {
+                  this->applyCompletion(index.data(Qt::DisplayRole).toString());
+                  popup->hide();
+                  return true;
+               }
+               break;
+            }
+            case Qt::Key_Down:
+            case Qt::Key_Up:
+            case Qt::Key_PageDown:
+            case Qt::Key_PageUp:
+               if (from_editor) {
+                  QCoreApplication::sendEvent(popup, key_event);
+                  return true;
+               }
+               break;
+         }
+      }
+      if (from_editor && key_event->key() == Qt::Key_Period) {
+         QTimer::singleShot(0, this, [this]() {
+            this->showAutocompletePopup(true);
+         });
+      }
+   }
+   return QWidget::eventFilter(watched, event);
 }
